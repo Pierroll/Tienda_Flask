@@ -239,13 +239,13 @@ def add_product():
             flash('Error al agregar el producto')
             print(e)
             
-    return render_template('add_product.html', form=form)
+    return render_template('product/add_product.html', form=form)
 
 
 @views.route('/list-products')
 def list_products():
     items = Product.query.all()
-    return render_template('list_products.html', items=items)
+    return render_template('product/list_products.html', items=items)
 
 
 
