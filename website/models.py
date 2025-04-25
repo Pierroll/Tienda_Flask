@@ -9,7 +9,11 @@ class Customer(db.Model, UserMixin):
     email = db.Column(db.String(100), unique=True)
     username = db.Column(db.String(100))
     password_hash = db.Column(db.String(150))
+    phone_number = db.Column(db.String(15), nullable=True)  # New attribute
+    address = db.Column(db.String(255), nullable=True)  # New attribute
+    role = db.Column(db.String(50), default='customer')  # New attribute
     date_joined = db.Column(db.DateTime(), default=datetime.utcnow)
+    last_login = db.Column(db.DateTime(), nullable=True)  # New attribute
 
     cart_items = db.relationship('Cart', backref=db.backref('customer', lazy=True))
     orders = db.relationship('Order', backref=db.backref('customer', lazy=True))
@@ -26,53 +30,88 @@ class Customer(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password=password)
 
     def __str__(self):
-        return '<Customer %r>' % Customer.id
+        return '<Customer %r>' % self.id
 
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)  # New attribute
     current_price = db.Column(db.Float, nullable=False)
     previous_price = db.Column(db.Float, nullable=False)
     in_stock = db.Column(db.Integer, nullable=False)
     product_picture = db.Column(db.String(1000), nullable=False)
-    flash_sale = db.Column(db.Boolean, default=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)  # New attribute
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    discount = db.Column(db.Float, default=0.0)  # New attribute
+    flash_sale = db.Column(db.Boolean, default=False)  # Add this new column
 
     carts = db.relationship('Cart', backref=db.backref('product', lazy=True))
-    orders = db.relationship('Order', backref=db.backref('product', lazy=True))
+    # Modified relationship
+    orders = db.relationship('OrderItem', backref=db.backref('product', lazy=True))
 
     def __str__(self):
         return '<Product %r>' % self.product_name
 
 
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    total_price = db.Column(db.Float, nullable=False)  # New attribute
+    payment_status = db.Column(db.String(50), nullable=False)  # New attribute
+    payment_method = db.Column(db.String(50), nullable=False)  # New attribute
+    order_date = db.Column(db.DateTime, default=datetime.utcnow)  # New attribute
+    shipping_address = db.Column(db.String(255), nullable=False)  # New attribute
+    
+    # Add relationship with OrderItem
+    items = db.relationship('OrderItem', backref=db.backref('order', lazy=True))
+    
+    # Add this property to resolve the error
+    @property
+    def customer_link(self):
+        return self.customer
+
+    def __str__(self):
+        return '<Order %r>' % self.id
+
+
+# New OrderItem model
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    price = db.Column(db.Float, nullable=False)
+    
+    def __str__(self):
+        return '<OrderItem %r>' % self.id
+
+
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-
-    customer_link = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    product_link = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-
-    # customer product
-
+    total_price = db.Column(db.Float, nullable=False)  # New attribute
+    
+    # Add this property to resolve the error
+    @property
+    def customer_link(self):
+        return self.customer
+    
     def __str__(self):
         return '<Cart %r>' % self.id
 
 
-class Order(db.Model):
+class Category(db.Model):  # New model
     id = db.Column(db.Integer, primary_key=True)
-    quantity = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(100), nullable=False)
-    payment_id = db.Column(db.String(1000), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
 
-    customer_link = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    product_link = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-
-    # customer
+    products = db.relationship('Product', backref=db.backref('category', lazy=True))
 
     def __str__(self):
-        return '<Order %r>' % self.id
+        return '<Category %r>' % self.name
 
 
 
