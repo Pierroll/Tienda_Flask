@@ -94,10 +94,35 @@ class Cart(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     total_price = db.Column(db.Float, nullable=False)  # New attribute
     
-    # Add this property to resolve the error
+    # Modified property with getter and setter
     @property
     def customer_link(self):
         return self.customer
+    
+    @customer_link.setter
+    def customer_link(self, value):
+        # Check if value is an integer (customer ID)
+        if isinstance(value, int):
+            # Set the customer_id directly
+            self.customer_id = value
+        else:
+            # Otherwise, assume it's a Customer object
+            self.customer = value
+    
+    # Modified property with getter and setter
+    @property
+    def product_link(self):
+        return self.product
+    
+    @product_link.setter
+    def product_link(self, value):
+        # Check if value is an integer (product ID)
+        if isinstance(value, int):
+            # Set the product_id directly
+            self.product_id = value
+        else:
+            # Otherwise, assume it's a Product object
+            self.product = value
     
     def __str__(self):
         return '<Cart %r>' % self.id

@@ -19,51 +19,64 @@ def home():
 
     items = Product.query.filter_by(flash_sale=True)
 
-    return render_template('home.html', items=items, cart=Cart.query.filter_by(customer_link=current_user.id).all()
+    return render_template('home.html', items=items, cart=Cart.query.filter_by(customer_id=current_user.id).all()
                            if current_user.is_authenticated else [])
 
 
 @views.route('/add-to-cart/<int:item_id>')
 @login_required
 def add_to_cart(item_id):
+    # Debug print to see if the function is being called
+    print(f"Adding item {item_id} to cart for user {current_user.id}")
+    
     item_to_add = Product.query.get(item_id)
-    item_exists = Cart.query.filter_by(product_link=item_id, customer_link=current_user.id).first()
+    if not item_to_add:
+        flash('Product not found')
+        return redirect(request.referrer)
+    
+    # Check if the item is already in the cart using product_id and customer_id
+    item_exists = Cart.query.filter_by(product_id=item_id, customer_id=current_user.id).first()
     if item_exists:
         try:
             item_exists.quantity = item_exists.quantity + 1
+            item_exists.total_price = item_exists.quantity * item_to_add.current_price
             db.session.commit()
-            flash(f' Quantity of { item_exists.product.product_name } has been updated')
+            flash(f'Cantidad de {item_to_add.product_name} actualizada en el carrito')
             return redirect(request.referrer)
         except Exception as e:
             print('Quantity not Updated', e)
-            flash(f'Quantity of { item_exists.product.product_name } not updated')
+            flash(f'No se pudo actualizar la cantidad: {str(e)}')
             return redirect(request.referrer)
 
+    # Create a new cart item
     new_cart_item = Cart()
     new_cart_item.quantity = 1
-    new_cart_item.product_link = item_to_add.id
-    new_cart_item.customer_link = current_user.id
+    new_cart_item.product_id = item_to_add.id  # Use product_id
+    new_cart_item.customer_id = current_user.id  # Use customer_id
+    new_cart_item.total_price = item_to_add.current_price
 
     try:
         db.session.add(new_cart_item)
         db.session.commit()
-        flash(f'{new_cart_item.product.product_name} added to cart')
+        flash(f'{item_to_add.product_name} agregado al carrito')
     except Exception as e:
         print('Item not added to cart', e)
-        flash(f'{new_cart_item.product.product_name} has not been added to cart')
+        flash(f'Error al agregar al carrito: {str(e)}')
 
     return redirect(request.referrer)
+
 
 
 @views.route('/cart')
 @login_required
 def show_cart():
-    cart = Cart.query.filter_by(customer_link=current_user.id).all()
+    # Use customer_id instead of customer_link
+    cart = Cart.query.filter_by(customer_id=current_user.id).all()
     amount = 0
     for item in cart:
         amount += item.product.current_price * item.quantity
 
-    return render_template('cart.html', cart=cart, amount=amount, total=amount+200)
+    return render_template('cliente/cart.html', cart=cart, amount=amount, total=amount+200)
 
 
 @views.route('/pluscart')
@@ -73,12 +86,12 @@ def plus_cart():
         cart_id = request.args.get('cart_id')
         cart_item = Cart.query.get(cart_id)
         cart_item.quantity = cart_item.quantity + 1
+        cart_item.total_price = cart_item.quantity * cart_item.product.current_price
         db.session.commit()
 
-        cart = Cart.query.filter_by(customer_link=current_user.id).all()
+        cart = Cart.query.filter_by(customer_id=current_user.id).all()
 
         amount = 0
-
         for item in cart:
             amount += item.product.current_price * item.quantity
 
@@ -89,7 +102,6 @@ def plus_cart():
         }
 
         return jsonify(data)
-
 
 @views.route('/minuscart')
 @login_required
@@ -97,13 +109,14 @@ def minus_cart():
     if request.method == 'GET':
         cart_id = request.args.get('cart_id')
         cart_item = Cart.query.get(cart_id)
-        cart_item.quantity = cart_item.quantity - 1
-        db.session.commit()
+        if cart_item.quantity > 1:
+            cart_item.quantity = cart_item.quantity - 1
+            cart_item.total_price = cart_item.quantity * cart_item.product.current_price
+            db.session.commit()
 
-        cart = Cart.query.filter_by(customer_link=current_user.id).all()
+        cart = Cart.query.filter_by(customer_id=current_user.id).all()
 
         amount = 0
-
         for item in cart:
             amount += item.product.current_price * item.quantity
 
@@ -115,8 +128,7 @@ def minus_cart():
 
         return jsonify(data)
 
-
-@views.route('removecart')
+@views.route('/removecart')
 @login_required
 def remove_cart():
     if request.method == 'GET':
@@ -125,15 +137,13 @@ def remove_cart():
         db.session.delete(cart_item)
         db.session.commit()
 
-        cart = Cart.query.filter_by(customer_link=current_user.id).all()
+        cart = Cart.query.filter_by(customer_id=current_user.id).all()
 
         amount = 0
-
         for item in cart:
             amount += item.product.current_price * item.quantity
 
         data = {
-            'quantity': cart_item.quantity,
             'amount': amount,
             'total': amount + 200
         }
@@ -144,7 +154,7 @@ def remove_cart():
 @views.route('/place-order')
 @login_required
 def place_order():
-    customer_cart = Cart.query.filter_by(customer_link=current_user.id)
+    customer_cart = Cart.query.filter_by(customer_id=current_user.id)
     if customer_cart:
         try:
             total = 0
@@ -162,12 +172,12 @@ def place_order():
                 new_order.status = create_order_response['invoice']['state'].capitalize()
                 new_order.payment_id = create_order_response['id']
 
-                new_order.product_link = item.product_link
-                new_order.customer_link = item.customer_link
+                new_order.product_id = item.product_id  # Use product_id
+                new_order.customer_id = item.customer_id  # Use customer_id
 
                 db.session.add(new_order)
 
-                product = Product.query.get(item.product_link)
+                product = Product.query.get(item.product_id)
 
                 product.in_stock -= item.quantity
 
@@ -190,8 +200,8 @@ def place_order():
 @views.route('/orders')
 @login_required
 def order():
-    orders = Order.query.filter_by(customer_link=current_user.id).all()
-    return render_template('orders.html', orders=orders)
+    orders = Order.query.filter_by(customer_id=current_user.id).all()
+    return render_template('cliente/orders.html', orders=orders)
 
 
 @views.route('/search', methods=['GET', 'POST'])

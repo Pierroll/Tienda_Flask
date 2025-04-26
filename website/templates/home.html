@@ -142,7 +142,11 @@
                 </div>
 
                 <div class="col">
-                    <a href="/add-to-cart/{{ item.id }}">Add</a>
+                    <!-- In the product listing section, change this line: -->
+                    <div class="col">
+                        <!-- Make sure your product cards have links like this -->
+                        <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-primary">Add to Cart</a>
+                    </div>
                 </div>
             
             </div>
