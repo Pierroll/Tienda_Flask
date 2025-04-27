@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Borrar Producto{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-white">¿Estás seguro de que deseas eliminar este producto?</h2>
+
+    <div class="card bg-dark text-white">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <img src="{{ product.product_picture }}" alt="{{ product.product_name }}" 
+                         class="img-fluid rounded" style="max-width: 200px;">
+                </div>
+                <div class="col-md-9">
+                    <h3>{{ product.product_name }}</h3>
+                    <p><strong>ID:</strong> {{ product.id }}</p>
+                    <p><strong>Precio Actual:</strong> ${{ "%.2f"|format(product.current_price) }}</p>
+                    <p><strong>Precio Anterior:</strong> ${{ "%.2f"|format(product.previous_price) }}</p>
+                    <p><strong>Stock:</strong> {{ product.in_stock }}</p>
+                    <p><strong>Oferta Flash:</strong> 
+                        {% if product.flash_sale %}
+                            <span class="badge bg-success">Sí</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </p>
+                    
+                    <div class="mt-4">
+                        <form action="{{ url_for('product.delete_product', id=product.id) }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Confirmar Eliminación
+                            </button>
+                            <a href="{{ url_for('admin.shop_items') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+        padding: 0.5rem 1rem;
+        margin-right: 10px;
+    }
+    .badge {
+        padding: 0.5em 0.75em;
+    }
+</style>
+{% endblock %} 

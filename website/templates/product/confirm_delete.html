@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Eliminación{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h3>¿Estás seguro de que deseas eliminar este producto?</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <img src="{{ product.product_picture }}" alt="{{ product.product_name }}" class="img-fluid">
+                </div>
+                <div class="col-md-8">
+                    <h4>{{ product.product_name }}</h4>
+                    <p><strong>Precio:</strong> ${{ product.current_price }}</p>
+                    <p><strong>Stock:</strong> {{ product.in_stock }}</p>
+                    
+                    <div class="mt-4">
+                        <a href="/delete-item/{{ product.id }}" class="btn btn-danger">Sí, Eliminar Producto</a>
+                        <a href="/list-products" class="btn btn-secondary">No, Cancelar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

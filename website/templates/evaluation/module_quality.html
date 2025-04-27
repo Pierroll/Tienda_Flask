@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Evaluación de Calidad por Módulo{% endblock %}
+
+{% block styles %}
+<style>
+    .evaluation-container {
+        padding: 2rem 0;
+        min-height: calc(100vh - 60px);
+    }
+
+    .module-card {
+        background: var(--nav-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .module-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .module-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .quality-metric {
+        background: var(--bg-color);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .metric-label {
+        font-weight: 500;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .metric-value {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .progress {
+        flex: 1;
+        height: 0.5rem;
+        background: rgba(0,0,0,0.1);
+        border-radius: 1rem;
+    }
+
+    .progress-bar {
+        border-radius: 1rem;
+    }
+
+    .metric-score {
+        font-weight: 600;
+        min-width: 3rem;
+        text-align: right;
+    }
+
+    .quality-summary {
+        background: var(--nav-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .summary-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .summary-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .summary-metric {
+        background: var(--bg-color);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .summary-label {
+        font-size: 0.875rem;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .summary-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .recommendations {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(74, 144, 226, 0.1);
+        border-radius: 10px;
+        border-left: 4px solid #4a90e2;
+    }
+
+    .recommendations-title {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .recommendations-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--text-color);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="evaluation-container">
+    <div class="container">
+        <h1 class="mb-4">Evaluación de Calidad por Módulo</h1>
+
+        <!-- Módulo de Autenticación -->
+        <div class="module-card">
+            <div class="module-header">
+                <h2 class="module-title">Módulo de Autenticación</h2>
+                <span class="badge bg-primary">auth.py</span>
+            </div>
+            
+            <div class="quality-metric">
+                <div class="metric-label">Seguridad</div>
+                <div class="metric-value">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 95%"></div>
+                    </div>
+                    <span class="metric-score">95%</span>
+                </div>
+            </div>
+
+            <div class="quality-metric">
+                <div class="metric-label">Mantenibilidad</div>
+                <div class="metric-value">
+                    <div class="progress">
+                        <div class="progress-bar bg-info" style="width: 85%"></div>
+                    </div>
+                    <span class="metric-score">85%</span>
+                </div>
+            </div>
+
+            <div class="recommendations">
+                <div class="recommendations-title">Recomendaciones de Mejora</div>
+                <ul class="recommendations-list">
+                    <li>Implementar autenticación de dos factores</li>
+                    <li>Agregar registro de intentos fallidos de inicio de sesión</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Módulo de Productos -->
+        <div class="module-card">
+            <div class="module-header">
+                <h2 class="module-title">Módulo de Productos</h2>
+                <span class="badge bg-primary">product.py</span>
+            </div>
+            
+            <div class="quality-metric">
+                <div class="metric-label">Funcionalidad</div>
+                <div class="metric-value">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 90%"></div>
+                    </div>
+                    <span class="metric-score">90%</span>
+                </div>
+            </div>
+
+            <div class="quality-metric">
+                <div class="metric-label">Usabilidad</div>
+                <div class="metric-value">
+                    <div class="progress">
+                        <div class="progress-bar bg-info" style="width: 88%"></div>
+                    </div>
+                    <span class="metric-score">88%</span>
+                </div>
+            </div>
+
+            <div class="recommendations">
+                <div class="recommendations-title">Recomendaciones de Mejora</div>
+                <ul class="recommendations-list">
+                    <li>Implementar búsqueda avanzada de productos</li>
+                    <li>Agregar filtros por rango de precios</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Módulo de Administración -->
+        <div class="module-card">
+            <div class="module-header">
+                <h2 class="module-title">Módulo de Administración</h2>
+                <span class="badge bg-primary">admin.py</span>
+            </div>
+            
+            <div class="quality-metric">
+                <div class="metric-label">Control de Acceso</div>
+                <div class="metric-value">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 92%"></div>
+                    </div>
+                    <span class="metric-score">92%</span>
+                </div>
+            </div>
+
+            <div class="quality-metric">
+                <div class="metric-label">Eficiencia</div>
+                <div class="metric-value">
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" style="width: 75%"></div>
+                    </div>
+                    <span class="metric-score">75%</span>
+                </div>
+            </div>
+
+            <div class="recommendations">
+                <div class="recommendations-title">Recomendaciones de Mejora</div>
+                <ul class="recommendations-list">
+                    <li>Optimizar consultas a la base de datos</li>
+                    <li>Implementar caché para datos frecuentes</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Resumen General -->
+        <div class="quality-summary">
+            <h2 class="summary-title">Resumen General de Calidad</h2>
+            
+            <div class="summary-metrics">
+                <div class="summary-metric">
+                    <div class="summary-label">Calidad General</div>
+                    <div class="summary-value">87%</div>
+                </div>
+                
+                <div class="summary-metric">
+                    <div class="summary-label">Seguridad</div>
+                    <div class="summary-value">92%</div>
+                </div>
+                
+                <div class="summary-metric">
+                    <div class="summary-label">Usabilidad</div>
+                    <div class="summary-value">85%</div>
+                </div>
+                
+                <div class="summary-metric">
+                    <div class="summary-label">Mantenibilidad</div>
+                    <div class="summary-value">83%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

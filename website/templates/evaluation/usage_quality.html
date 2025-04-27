@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+
+{% block title %}Evaluación de Uso por Módulo{% endblock %}
+
+{% block styles %}
+<style>
+    .usage-container {
+        padding: 2rem 0;
+        min-height: calc(100vh - 60px);
+    }
+
+    .usage-card {
+        background: var(--nav-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .usage-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .usage-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .usage-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card {
+        background: var(--bg-color);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--text-color);
+    }
+
+    .usage-chart {
+        background: var(--bg-color);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        height: 200px;
+    }
+
+    .feedback-section {
+        background: var(--bg-color);
+        border-radius: 10px;
+        padding: 1rem;
+    }
+
+    .feedback-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .feedback-title {
+        font-weight: 600;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .feedback-item {
+        background: var(--nav-bg);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .feedback-user {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .user-avatar {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: var(--bg-color);
+    }
+
+    .user-name {
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    .feedback-content {
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .feedback-date {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .usage-summary {
+        background: var(--nav-bg);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .summary-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .improvement-suggestions {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(74, 144, 226, 0.1);
+        border-radius: 10px;
+        border-left: 4px solid #4a90e2;
+    }
+
+    .suggestions-title {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .suggestions-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--text-color);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="usage-container">
+    <div class="container">
+        <h1 class="mb-4">Evaluación de Uso por Módulo</h1>
+
+        <!-- Módulo de Productos -->
+        <div class="usage-card">
+            <div class="usage-header">
+                <h2 class="usage-title">Módulo de Productos</h2>
+                <span class="badge bg-primary">Últimos 30 días</span>
+            </div>
+
+            <div class="usage-stats">
+                <div class="stat-card">
+                    <div class="stat-value">2,547</div>
+                    <div class="stat-label">Productos Vistos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">456</div>
+                    <div class="stat-label">Productos Agregados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">98%</div>
+                    <div class="stat-label">Disponibilidad</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4.8</div>
+                    <div class="stat-label">Satisfacción Usuario</div>
+                </div>
+            </div>
+
+            <div class="feedback-section">
+                <div class="feedback-header">
+                    <h3 class="feedback-title">Comentarios de Usuarios</h3>
+                </div>
+
+                <div class="feedback-item">
+                    <div class="feedback-user">
+                        <div class="user-avatar"></div>
+                        <span class="user-name">Juan Pérez</span>
+                    </div>
+                    <p class="feedback-content">La búsqueda de productos es muy intuitiva y rápida.</p>
+                    <div class="feedback-date">Hace 2 días</div>
+                </div>
+
+                <div class="feedback-item">
+                    <div class="feedback-user">
+                        <div class="user-avatar"></div>
+                        <span class="user-name">María García</span>
+                    </div>
+                    <p class="feedback-content">Me gustaría tener más opciones de filtrado por características.</p>
+                    <div class="feedback-date">Hace 5 días</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Módulo de Carrito -->
+        <div class="usage-card">
+            <div class="usage-header">
+                <h2 class="usage-title">Módulo de Carrito</h2>
+                <span class="badge bg-primary">Últimos 30 días</span>
+            </div>
+
+            <div class="usage-stats">
+                <div class="stat-card">
+                    <div class="stat-value">1,234</div>
+                    <div class="stat-label">Carritos Creados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">Tasa de Conversión</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$45.8K</div>
+                    <div class="stat-label">Ventas Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4.6</div>
+                    <div class="stat-label">Satisfacción Usuario</div>
+                </div>
+            </div>
+
+            <div class="improvement-suggestions">
+                <div class="suggestions-title">Sugerencias de Mejora</div>
+                <ul class="suggestions-list">
+                    <li>Implementar guardado automático del carrito</li>
+                    <li>Agregar opción de lista de deseos</li>
+                    <li>Mejorar el proceso de checkout</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Resumen General de Uso -->
+        <div class="usage-summary">
+            <h2 class="summary-title">Resumen General de Uso</h2>
+            
+            <div class="usage-stats">
+                <div class="stat-card">
+                    <div class="stat-value">15.2K</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">89%</div>
+                    <div class="stat-label">Satisfacción General</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">95%</div>
+                    <div class="stat-label">Tiempo Activo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4.7</div>
+                    <div class="stat-label">Calificación App</div>
+                </div>
+            </div>
+
+            <div class="improvement-suggestions">
+                <div class="suggestions-title">Áreas de Mejora Prioritarias</div>
+                <ul class="suggestions-list">
+                    <li>Optimizar tiempos de carga en catálogo de productos</li>
+                    <li>Mejorar la experiencia de búsqueda y filtrado</li>
+                    <li>Implementar más opciones de personalización</li>
+                    <li>Agregar funcionalidades de recomendación basadas en historial</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

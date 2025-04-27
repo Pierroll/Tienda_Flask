@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,37 +7,133 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js" ></script>
 
-    <!-- Update the style section to make the footer more responsive -->
     <style>
+        :root[data-theme="light"] {
+            --bg-color: #f5f5f5;
+            --nav-bg: #ffffff;
+            --text-color: #333333;
+            --link-color: #666666;
+            --hover-color: #333333;
+        }
+        
+        :root[data-theme="dark"] {
+            --bg-color: #121212;
+            --nav-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --link-color: #cccccc;
+            --hover-color: #ffffff;
+        }
+        
+        :root[data-theme="gray"] {
+            --bg-color: #2c2c2c;
+            --nav-bg: #333333;
+            --text-color: #ffffff;
+            --link-color: #cccccc;
+            --hover-color: #ffffff;
+        }
+        
         html, body {
             height: 100%;
             margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
+        
         body {
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
         }
+        
         .content {
-            flex: 1 0 auto;
-            padding-bottom: 30px; /* Add some padding to prevent content from touching footer */
+            flex: 1;
+            background: transparent;
         }
-        footer {
-            flex-shrink: 0;
-            width: 100%;
+        
+        .navbar {
+            background-color: var(--nav-bg) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-link {
+            color: var(--link-color) !important;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--hover-color) !important;
+        }
+        
+        .theme-selector {
             position: relative;
-            bottom: 0;
+            margin-right: 1rem;
         }
-        @media (max-height: 600px) {
-            footer {
-                position: relative;
-            }
+        
+        .theme-btn {
+            background: none;
+            border: none;
+            color: var(--link-color);
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        .theme-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--nav-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: none;
+            z-index: 1000;
+            min-width: 150px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .theme-menu.show {
+            display: block;
+        }
+        
+        .theme-option {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: var(--link-color);
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .theme-option:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--hover-color);
+        }
+        
+        .theme-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .theme-color.light {
+            background: #f5f5f5;
+        }
+        
+        .theme-color.dark {
+            background: #121212;
+        }
+        
+        .theme-color.gray {
+            background: #2c2c2c;
         }
     </style>
 
     <script src="https://kit.fontawesome.com/e24507d923.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" />
-
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -45,11 +141,9 @@
 
     <title>Amazon | {% block title %} {% endblock %}</title>
 </head>
-<body style="background-color: rgb(124, 14, 151);">
-
-
+<body>
     <!-- navbar section -->
-    <nav class="navbar navbar-expand-lg" style="background-color: white;">
+    <nav class="navbar navbar-expand-lg">
       <div class="container-fluid">
         <a class="navbar-brand" href="#" style="color: orange; font-size: 30px; margin-right: -2px;">
           <i class="fa-brands fa-amazon"></i>
@@ -64,106 +158,134 @@
             </li>
 
             <li class="nav-item">
-              <a class="nav-link text-grey" href="{{ url_for('views.list_products') }}" style="font-size: 17px;">Ver Productos</a>
+              <a class="nav-link" href="{{ url_for('views.list_products') }}" style="font-size: 17px;">Ver Productos</a>
             </li>
 
             {% if current_user.is_authenticated and current_user.id == 1 %}
             <li class="nav-item">
-              <a class="nav-link text-grey" href="{{ url_for('views.add_product') }}" style="font-size: 17px;">Agregar Productos</a>
+              <a class="nav-link" href="{{ url_for('views.add_product') }}" style="font-size: 17px;">Agregar Productos</a>
             </li>
             {% endif %}
 
             <li class="nav-item">
-              <a class="nav-link text-grey" href="#" style="font-size: 17px;">About Us</a>
+              <a class="nav-link" href="#" style="font-size: 17px;">About Us</a>
             </li>
 
             <li class="nav-item">
-              <a class="nav-link text-grey" href="#" style="font-size: 17px;">Contact us</a>
+              <a class="nav-link" href="#" style="font-size: 17px;">Contact us</a>
             </li>
           </ul>
 
-          <form class="d-flex" role="search" action="/search" style="margin-right: 170px;" method="POST">
+          <form class="d-flex" role="search" action="/search" style="margin-right: 20px;" method="POST">
             <input class="form-control me-2" name="search" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn" type="submit">Search</button>
+            <button class="btn btn-outline-warning" type="submit">Search</button>
           </form>
-        </div>
 
+          <div class="theme-selector">
+            <button class="theme-btn" onclick="toggleThemeMenu()">
+                <i class="fas fa-palette"></i>
+            </button>
+            <div class="theme-menu" id="themeMenu">
+                <div class="theme-option" onclick="setTheme('light')">
+                    <span class="theme-color light"></span>
+                    <span>Claro</span>
+                </div>
+                <div class="theme-option" onclick="setTheme('dark')">
+                    <span class="theme-color dark"></span>
+                    <span>Oscuro</span>
+                </div>
+                <div class="theme-option" onclick="setTheme('gray')">
+                    <span class="theme-color gray"></span>
+                    <span>Gris</span>
+                </div>
+            </div>
+          </div>
         
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-          <li class="nav-item mx-2" id="items">
-            
-            {% if cart | length < 1 %}
-            <a class="nav-link text-grey" href="{{ url_for('views.show_cart') }}"><span class="badge bg-success"></span> Cart
-              <i class="fa-solid fa-cart-shopping"></i>
-            </a>
-            {% else %}
-            <a class="nav-link text-grey" href="{{ url_for('views.show_cart') }}"><span class="badge bg-success">{{ cart|length }}</span> Cart
-              <i class="fa-solid fa-cart-shopping"></i>
-            </a>
-            {% endif %}
-          </li>
-
-          <li class="nav-item mx-2" id="items">
-            <a class="nav-link text-grey" href="#"><span class="badge bg-success"></span> WishList
-              <i class="fa-solid fa-heart"></i>
-            </a>
-          </li>
-
-          
-          <li class="nav-item dropdown mx-2">
-            <a class="nav-link dropdown-toggle text-grey" href="#" role="button", id="profileDropdown" 
-            data-bs-toggle="dropdown" aria-hidden="false">
-              Account
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="profileDropdown">
-
-            
-              {% if current_user.is_authenticated %}
-              <li><a class="dropdown-item" href="/profile/{{ current_user.id }}">Profile <i class="fa-solid fa-user"></i></a></li>
-              <li><a class="dropdown-item" href="{{ url_for('views.order') }}">Orders <i class="fa-solid fa-truck-fast"></i></a></li>
-              <li><a class="dropdown-item" href="/logout">Log Out <i class="fa-solid fa-right-from-bracket"></i></a></li>
+          <ul class="navbar-nav mb-2 mb-lg-0">
+            <li class="nav-item mx-2" id="items">
+              {% if cart | length < 1 %}
+              <a class="nav-link" href="{{ url_for('views.show_cart') }}"><span class="badge bg-success"></span> Cart
+                <i class="fa-solid fa-cart-shopping"></i>
+              </a>
               {% else %}
-              
-              <li><a class="dropdown-item" href="/login">Login <i class="fa-solid fa-right-to-bracket"></i></a></li>
-
+              <a class="nav-link" href="{{ url_for('views.show_cart') }}"><span class="badge bg-success">{{ cart|length }}</span> Cart
+                <i class="fa-solid fa-cart-shopping"></i>
+              </a>
               {% endif %}
+            </li>
 
-            </ul>
-
-          </li>
-
-        </ul>
-
-
+            <li class="nav-item mx-2" id="items">
+              <a class="nav-link" href="#"><span class="badge bg-success"></span> WishList
+                <i class="fa-solid fa-heart"></i>
+              </a>
+            </li>
+            
+            <li class="nav-item dropdown mx-2">
+              <a class="nav-link dropdown-toggle" href="#" role="button" id="profileDropdown" 
+              data-bs-toggle="dropdown" aria-hidden="false">
+                Account
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                {% if current_user.is_authenticated %}
+                <li><a class="dropdown-item" href="/profile/{{ current_user.id }}">Profile <i class="fa-solid fa-user"></i></a></li>
+                <li><a class="dropdown-item" href="{{ url_for('views.order') }}">Orders <i class="fa-solid fa-truck-fast"></i></a></li>
+                <li><a class="dropdown-item" href="/logout">Log Out <i class="fa-solid fa-right-from-bracket"></i></a></li>
+                {% else %}
+                <li><a class="dropdown-item" href="/login">Login <i class="fa-solid fa-right-to-bracket"></i></a></li>
+                {% endif %}
+              </ul>
+            </li>
+          </ul>
+        </div>
       </div>
     </nav>
 
-
     {% for message in get_flashed_messages() %}
-
     <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-top: 5px;">
         <strong>{{ message }}</strong>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    
     </div>
     {% endfor %}
 
-    <!-- After the flash messages -->
-        <div class="content container">
-            {% block body %}
-            {% endblock %}
-        </div>
-        
-        <footer class="container-fluid text-center p-2" style="background-color: orange; color: white;">
-            <a href="https://github.com/Frost-Codes" style="color: white;">Amazon</a> | <span>
-            <i class="fa-sharp fa-regular fa-copyright"></i></span> 2023 All rights reserved
-        </footer>
+    <div class="content">
+        {% block body %}
+        {% endblock %}
+    </div>
 
-        <!-- Scripts at the end -->
-        <script src="{{ url_for('static', filename='js/owl.carousel.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/all.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/myScript.js') }}"></script>
-    </body>
-    </html>
+    <script>
+        // Cargar el tema guardado al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        });
+
+        function toggleThemeMenu() {
+            const menu = document.getElementById('themeMenu');
+            menu.classList.toggle('show');
+            
+            // Cerrar el menú al hacer clic fuera
+            document.addEventListener('click', function closeMenu(e) {
+                if (!e.target.closest('.theme-selector')) {
+                    menu.classList.remove('show');
+                    document.removeEventListener('click', closeMenu);
+                }
+            });
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Cerrar el menú después de seleccionar
+            const menu = document.getElementById('themeMenu');
+            menu.classList.remove('show');
+        }
+    </script>
+
+    <!-- Scripts at the end -->
+    <script src="{{ url_for('static', filename='js/owl.carousel.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/all.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/myScript.js') }}"></script>
+</body>
+</html>

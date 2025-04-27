@@ -87,14 +87,24 @@ def edit_product(id):
     
     return render_template('product/edit.html', product=product, categories=categories)
 
-@product.route('/delete/<int:id>', methods=['POST'])
-@login_required
+@product.route('/delete/<int:id>', methods=['GET', 'POST'])
 def delete_product(id):
-    product = Product.query.get_or_404(id)
-    db.session.delete(product)
-    db.session.commit()
-    flash('Product deleted successfully!', 'success')
-    return redirect(url_for('product.product_list'))
+    if request.method == 'GET':
+        # Mostrar página de confirmación
+        product = Product.query.get_or_404(id)
+        return render_template('product/delete_product.html', product=product)
+    else:
+        # Procesar el borrado
+        try:
+            product = Product.query.get_or_404(id)
+            nombre = product.product_name
+            db.session.delete(product)
+            db.session.commit()
+            flash(f'El producto "{nombre}" ha sido eliminado exitosamente', 'success')
+        except Exception as e:
+            print('Error al eliminar:', e)
+            flash('Error al eliminar el producto', 'error')
+        return redirect(url_for('admin.shop_items'))
 
 @product.route('/detail/<int:id>')
 def product_detail(id):

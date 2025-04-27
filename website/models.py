@@ -19,6 +19,10 @@ class Customer(db.Model, UserMixin):
     orders = db.relationship('Order', backref=db.backref('customer', lazy=True))
 
     @property
+    def is_admin(self):
+        return self.role == 'admin'
+
+    @property
     def password(self):
         raise AttributeError('Password is not a readable Attribute')
 
@@ -128,15 +132,15 @@ class Cart(db.Model):
         return '<Cart %r>' % self.id
 
 
-class Category(db.Model):  # New model
+class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
+    icon = db.Column(db.String(50), nullable=True)
+    products = db.relationship('Product', backref='category', lazy=True)
 
-    products = db.relationship('Product', backref=db.backref('category', lazy=True))
-
-    def __str__(self):
-        return '<Category %r>' % self.name
+    def __repr__(self):
+        return f'<Category {self.name}>'
 
 
 

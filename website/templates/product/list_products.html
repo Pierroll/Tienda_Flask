@@ -2,59 +2,348 @@
 
 {% block title %}Lista de Productos{% endblock %}
 
+{% block styles %}
+<style>
+    .container {
+        padding: 2rem 0;
+    }
+    
+    .page-header {
+        background: linear-gradient(45deg, #1e3c72, #2a5298);
+        color: #ffffff;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    
+    .page-header h2 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .filter-card {
+        background: var(--nav-bg);
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .filter-card .form-label {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .filter-card .form-control,
+    .filter-card .form-select {
+        background: var(--bg-color);
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 10px;
+        padding: 0.8rem;
+        transition: all 0.3s ease;
+        color: var(--text-color);
+    }
+    
+    .filter-card .form-control:focus,
+    .filter-card .form-select:focus {
+        border-color: #4a90e2;
+        box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.15);
+    }
+    
+    .table-container {
+        background: var(--nav-bg);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 1px solid rgba(0,0,0,0.1);
+    }
+    
+    .table {
+        margin-bottom: 0;
+        background: transparent;
+    }
+    
+    .table thead {
+        background: linear-gradient(45deg, #1e3c72, #2a5298);
+    }
+    
+    .table th {
+        color: #ffffff;
+        font-weight: 600;
+        padding: 1.2rem 1rem;
+        border: none;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .table td {
+        color: var(--text-color);
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+        vertical-align: middle;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+    }
+    
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+    
+    .table tbody tr:hover {
+        background: rgba(74, 144, 226, 0.05);
+    }
+    
+    .product-image-container {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .product-image-container:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1;
+    }
+    
+    .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-group {
+        gap: 5px;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .btn-sm {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-sm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .btn-warning {
+        background: linear-gradient(45deg, #f39c12, #f1c40f);
+        border: none;
+        color: white;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        border: none;
+        color: white;
+    }
+    
+    .btn-success {
+        background: linear-gradient(45deg, #27ae60, #2ecc71);
+        border: none;
+        color: white;
+    }
+    
+    .stock-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .stock-high {
+        background: rgba(46, 204, 113, 0.2);
+        color: #27ae60;
+    }
+    
+    .stock-medium {
+        background: rgba(241, 196, 15, 0.2);
+        color: #f39c12;
+    }
+    
+    .stock-low {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+    
+    .flash-sale-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    
+    .flash-sale-yes {
+        background: rgba(74, 144, 226, 0.2);
+        color: #4a90e2;
+    }
+    
+    .flash-sale-no {
+        background: rgba(0,0,0,0.1);
+        color: var(--text-color);
+    }
+    
+    .price {
+        font-weight: 600;
+        color: #4a90e2;
+    }
+    
+    .previous-price {
+        text-decoration: line-through;
+        color: #e74c3c;
+        opacity: 0.7;
+    }
+    
+    .alert-info {
+        background: var(--nav-bg);
+        border: 1px solid rgba(0,0,0,0.1);
+        color: var(--text-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="container">
-    <h2>Lista de Productos en Base de Datos</h2>
+    <div class="page-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2>Lista de Productos</h2>
+            </div>
+            <div class="col-md-4 text-end">
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('views.add_product') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Producto
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-card">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Categoría</label>
+                <select name="category" class="form-select">
+                    <option value="">Todas las categorías</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="search" class="form-control" placeholder="Buscar productos..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Ordenar por</label>
+                <select name="sort" class="form-select">
+                    <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Nombre (A-Z)</option>
+                    <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Nombre (Z-A)</option>
+                    <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Precio (Menor a Mayor)</option>
+                    <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Precio (Mayor a Menor)</option>
+                </select>
+            </div>
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                <a href="{{ url_for('views.list_products') }}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
     
     {% if items %}
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Imagen</th>
-                <th>Nombre</th>
-                <th>Precio Actual</th>
-                <th>Precio Anterior</th>
-                <th>Stock</th>
-                <th>Oferta Flash</th>
-                <th>Fecha Agregado</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item.id }}</td>
-                <td>
-                    <div style="max-width: 100px; max-height: 100px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-                        <img src="{{ item.product_picture }}" alt="{{ item.product_name }}" style="max-width: 100%; max-height: 100%; object-fit: cover;">
-                    </div>
-                </td>
-                <td>{{ item.product_name }}</td>
-                <td>${{ item.current_price }}</td>
-                <td>${{ item.previous_price }}</td>
-                <td>
-                    {% if item.in_stock > 10 %}
-                        Alta
-                    {% elif item.in_stock > 0 %}
-                        Media
-                    {% else %}
-                        Baja
-                    {% endif %}
-                </td>
-                <td>
-                    {% if item.flash_sale %}
-                        Sí
-                    {% else %}
-                        No
-                    {% endif %}
-                </td>
-                <td>{{ item.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Precio Actual</th>
+                    <th>Precio Anterior</th>
+                    <th>Stock</th>
+                    <th>Oferta Flash</th>
+                    <th>Fecha Agregado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>
+                        <div class="product-image-container">
+                            <img src="{{ item.product_picture }}" alt="{{ item.product_name }}" class="product-image">
+                        </div>
+                    </td>
+                    <td>{{ item.product_name }}</td>
+                    <td><span class="price">${{ item.current_price }}</span></td>
+                    <td><span class="previous-price">${{ item.previous_price }}</span></td>
+                    <td>
+                        {% if item.in_stock > 10 %}
+                            <span class="stock-badge stock-high">Alta</span>
+                        {% elif item.in_stock > 0 %}
+                            <span class="stock-badge stock-medium">Media</span>
+                        {% else %}
+                            <span class="stock-badge stock-low">Baja</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.flash_sale %}
+                            <span class="flash-sale-badge flash-sale-yes">Sí</span>
+                        {% else %}
+                            <span class="flash-sale-badge flash-sale-no">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <div class="btn-group">
+                            {% if current_user.is_admin %}
+                            <a href="{{ url_for('views.edit_item', item_id=item.id) }}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{{ url_for('views.delete_item', item_id=item.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-shopping-cart"></i> Comprar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% else %}
-    <div>
+    <div class="alert alert-info">
         No hay productos en la base de datos.
     </div>
     {% endif %}
