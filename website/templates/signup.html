@@ -1,37 +1,33 @@
 {% extends 'forms.html' %}
 
-{% block title %} Sign Up {% endblock %}
+{% block title %}Registro{% endblock %}
 
 {% block body %}
 
-<!-- Sign Up section start -->
-
+<!-- Sección de registro -->
 <section class="base" id="base-signup">
     <div class="base-content">
         <div class="form">
             <h3>
-                Create an account <br> to shop
+                Crea una cuenta<br>para comprar
             </h3>
             
             <hr class="first">
             <form method="POST">
                 {{ form.hidden_tag() }}
 
-                <div class="email"><h4>Email Address</h4>{{ form.email }} <hr> </div>
-                <div class="name"><h4>User Name</h4>{{ form.username }} <hr></div>
-                <div class="password"><h4>Password</h4>{{ form.password1 }} <hr></div>
-                <div class="password"><h4>Confirm Passowrd</h4>{{ form.password2 }} <hr></div>
+                <div class="email"><h4>Correo Electrónico</h4>{{ form.email }} <hr></div>
+                <div class="name"><h4>Nombre de Usuario</h4>{{ form.username }} <hr></div>
+                <div class="password"><h4>Contraseña</h4>{{ form.password1 }} <hr></div>
+                <div class="password"><h4>Confirmar Contraseña</h4>{{ form.password2 }} <hr></div>
 
                 <div class="buttons">
-                    <a href="/login"> Login</a>
-                    {{ form.submit() }}
+                    <a href="/login">Inicia Sesión</a>
+                    {{ form.submit(value="Registrarse") }}
                 </div>
-
-
             </form>
         </div>
     </div>
 </section>
-
 
 {% endblock %}

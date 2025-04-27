@@ -1,148 +1,327 @@
 {% extends 'base.html' %}
 
-{% block title %} Home {% endblock %}
-
+{% block title %}Inicio{% endblock %}
 
 {% block body %}
+<style>
+    /* Estilos base adaptables al tema */
+    :root {
+        --orange-border: #ff9900;
+        --orange-glow: rgba(255, 153, 0, 0.2);
+    }
 
-<div class="container text-center">
-    <div class="row" style="margin: 10px;">
-      <div class="col " style="margin: 3px;">
-        <div class="list-group" id="right1">
-            {% if current_user.is_admin %}
-            <a href="{{ url_for('views.categories') }}" class="list-group-item list-group-item-action">
-                <i class="fa fa-cog"></i>
-                <span class="link-name">Manage Categories</span>
-            </a>
-            {% endif %}
-            
-            {% if categories %}
-                {% for category in categories %}
-                <a href="{{ url_for('views.category_products', category_id=category.id) }}" class="list-group-item list-group-item-action">
-                    <i class="{{ category.icon }}"></i>
-                    <span class="link-name">{{ category.name }}</span>
+    .category-list {
+        background-color: var(--nav-bg);
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .list-group-item {
+        background-color: transparent;
+        border: 1px solid var(--orange-border);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+        margin-bottom: 5px;
+    }
+
+    .list-group-item:hover {
+        background-color: var(--orange-glow);
+        transform: translateX(5px);
+    }
+
+    .info-card {
+        background-color: var(--nav-bg);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border: 1px solid var(--orange-border);
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid var(--orange-border);
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        border-radius: 50%;
+        background-color: var(--orange-glow);
+        margin-right: 15px;
+    }
+
+    .info-text h6 {
+        color: var(--text-color);
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .info-text p {
+        color: var(--text-color);
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .feature-bar {
+        background-color: var(--nav-bg);
+        border-radius: 10px;
+        margin: 20px 0;
+        padding: 15px;
+        border: 1px solid var(--orange-border);
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        background-color: var(--orange-glow);
+        border-radius: 8px;
+        padding: 15px;
+        transition: all 0.3s ease;
+        margin-bottom: 10px;
+    }
+
+    .feature-item:hover {
+        transform: translateY(-2px);
+        background-color: var(--orange-glow);
+    }
+
+    .feature-icon {
+        width: 30px;
+        height: 30px;
+        margin-right: 10px;
+    }
+
+    .feature-item h6 {
+        color: var(--text-color);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px 0;
+        width: 100%;
+    }
+
+    .product-card {
+        background-color: var(--nav-bg);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border: 2px solid var(--orange-border);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--orange-border), #ffb700);
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px var(--orange-glow);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid var(--orange-border);
+    }
+
+    .product-name {
+        color: var(--text-color);
+        font-size: 1.1rem;
+        margin: 10px 0;
+        font-weight: 600;
+    }
+
+    .product-price {
+        color: var(--text-color);
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .previous-price {
+        color: var(--text-color);
+        text-decoration: line-through;
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .stock-info {
+        color: var(--text-color);
+        font-size: 0.9rem;
+        margin-top: 10px;
+        opacity: 0.8;
+    }
+
+    .btn-add-cart {
+        background: linear-gradient(45deg, #ff9900, #f90);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 10px;
+        font-weight: 600;
+    }
+
+    .btn-add-cart:hover {
+        transform: scale(1.05);
+        background: linear-gradient(45deg, #f90, #ff9900);
+    }
+
+    /* Layout responsivo */
+    .container {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+
+    .row {
+        margin: 0 -15px;
+    }
+
+    @media (max-width: 768px) {
+        .product-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="row g-4">
+        <!-- Categorías -->
+        <div class="col-12 col-md-3">
+            <div class="category-list">
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('views.categories') }}" class="list-group-item list-group-item-action">
+                    <i class="fa fa-cog"></i>
+                    <span class="link-name">Gestionar Categorías</span>
                 </a>
-                {% endfor %}
-            {% else %}
-                <div class="list-group-item">
-                    <i class="fa fa-info-circle"></i>
-                    <span class="link-name">No categories available</span>
-                </div>
-            {% endif %}
-        </div>
-      </div>
-
-
-      <div class="col-md-7" style="margin: 3px;">
-        <img src="../static/images/center.gif" alt="" style="width: 600px; height: 365px; border-radius: 10px;">
-      </div>
-      <div class="col-md-2">
-        <div class="row" style="background-color: white; border-radius: 10px;">
-        
-            <div class="row" style="display: flex; margin-top: 5px;">
-                <div class="col">
-                    <img src="../static/images/help.png" alt="" style="width: 30px; height: 30px; margin-left: -30px;">
-                </div>
-                <div class="col">
-                    <h6 style="font-family:'Times New Roman', Times, serif; font-size: 12px; margin-left: -40px; font-weight: 600;">HELP CENTER</h6>
-                    <p style="font-size: small; color: gray; margin-left: -30px; margin-top: -10px;">Customer care</p>
-                </div>
-            </div>
-
-            <div class="row" style="display: flex; margin-top: 5px;">
-                <div class="col">
-                    <img src="../static/images/return.png" alt="" style="width: 30px; height: 30px; margin-left: -30px;">
-                </div>
-                <div class="col">
-                    <h6 style="font-family:'Times New Roman', Times, serif; font-size: 12px; margin-left: -40px; font-weight: 600;">EASY RETURN</h6>
-                    <p style="font-size: small; color: gray; margin-left: -30px; margin-top: -10px;">Quick Refund</p>
-                </div>
-            </div>
-
-            <div class="row" style="display: flex; margin-top: 5px;">
-                <div class="col">
-                    <img src="../static/images/payment.png" alt="" style="width: 30px; height: 30px; margin-left: -30px;">
-                </div>
-                <div class="col">
-                    <h6 style="font-family:'Times New Roman', Times, serif; font-size: 12px; margin-left: -40px; font-weight: 600;">SELL ON AMAZON</h6>
-                    <p style="font-size: small; color: gray; margin-left: -30px; margin-top: -10px;">FBA Program</p>
-                </div>
+                {% endif %}
+                
+                {% if categories %}
+                    {% for category in categories %}
+                    <a href="{{ url_for('views.category_products', category_id=category.id) }}" class="list-group-item list-group-item-action">
+                        <i class="{{ category.icon }}"></i>
+                        <span class="link-name">{{ category.name }}</span>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="list-group-item">
+                        <i class="fa fa-info-circle"></i>
+                        <span class="link-name">No hay categorías disponibles</span>
+                    </div>
+                {% endif %}
             </div>
         </div>
-        <div class="row" style="margin-top: 12px;">
-            <div class="col">
-                <img src="../static/images/right2.gif" alt="" class="right2">
-            </div>
-        
+
+        <!-- Banner central -->
+        <div class="col-12 col-md-6">
+            <img src="../static/images/center.gif" alt="Banner principal" class="img-fluid rounded shadow mb-4">
         </div>
-      </div>
-    </div>
-</div>
 
-
-<div class="container text-center">
-    <div class="row" style="margin: 8px;">
-        <div class="col" style="display: flex; background-color: white; border-radius: 10px; padding: 7px; margin: 5px;">
-            <img src="../static/images/techweek.png" alt="" style="width: 30px; height: 30px;">
-            <h6 style="margin: 4px">Tech Week</h6>
-        </div>
-        <div class="col" style="display: flex; background-color: white; border-radius: 10px; padding: 7px; margin: 5px;">
-            <img src="../static/images/FreeDelivery.png" alt="" style="width: 30px; height: 30px;">
-            <h6 style="margin: 4px">Free Delivery</h6>
-        </div>
-        <div class="col" style="display: flex; background-color: white; border-radius: 10px; padding: 7px; margin: 5px;">
-            <img src="../static/images/food.png" alt="" style="width: 30px; height: 30px;">
-            <h6 style="margin: 4px">Amazon Food</h6>
-        </div>
-        <div class="col" style="display: flex; background-color: white; border-radius: 10px; padding: 7px; margin: 5px;">
-            <img src="../static/images/airtime.png" alt="" style="width: 30px; height: 30px;">
-            <h6 style="margin: 4px">Airtime & Bills</h6>
-        </div>
- 
-    </div>
-</div>
-
-
-<div class="container text-center">
-    <div class="row" style="margin: 8px; background-color: rgb(219, 218, 218);" id="column">
-
-        {% for item in items %}
-
-        <div class="col" style="background-color: white;">
-        
-            <img src="{{ item.product_picture }}" alt="" style="height: 202px; width: 180px; border-radius: 10px;">
-
-            <div class="row" style="margin-top: 5px;">
-                <h6 style="color: gray;">{{ item.product_name }}</h6>
-            </div>
-
-            <div class="row" style="margin-top: 10px;">
-            
-                <div class="col">
-
-                    <h5 style="font-weight: 600; font-family: 'Times New Roman', Times, serif;">Ksh {{ item.current_price }}</h5>
-                    <strike><p style="color: gray;">Ksh {{ item.previous_price}}</p></strike>
-                </div>
-
-                <div class="col">
-                    <!-- In the product listing section, change this line: -->
-                    <div class="col">
-                        <!-- Make sure your product cards have links like this -->
-                        <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-primary">Add to Cart</a>
+        <!-- Información y servicios -->
+        <div class="col-12 col-md-3">
+            <div class="info-card">
+                <div class="info-item">
+                    <img src="../static/images/help.png" alt="Ayuda" class="info-icon">
+                    <div class="info-text">
+                        <h6>CENTRO DE AYUDA</h6>
+                        <p>Atención al cliente</p>
                     </div>
                 </div>
-            
+                <div class="info-item">
+                    <img src="../static/images/return.png" alt="Devoluciones" class="info-icon">
+                    <div class="info-text">
+                        <h6>DEVOLUCIÓN FÁCIL</h6>
+                        <p>Reembolso rápido</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <img src="../static/images/payment.png" alt="Ventas" class="info-icon">
+                    <div class="info-text">
+                        <h6>VENDE EN AMAZON</h6>
+                        <p>Programa FBA</p>
+                    </div>
+                </div>
             </div>
+            <img src="../static/images/right2.gif" alt="Promoción" class="img-fluid rounded shadow">
+        </div>
+    </div>
 
-            <div class="row">
-                <p>{{ item.in_stock }} Items Left</p>
+    <!-- Barra de características -->
+    <div class="feature-bar">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <img src="../static/images/techweek.png" alt="" class="feature-icon">
+                    <h6>Semana Tech</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <img src="../static/images/FreeDelivery.png" alt="" class="feature-icon">
+                    <h6>Envío Gratis</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <img src="../static/images/food.png" alt="" class="feature-icon">
+                    <h6>Amazon Comida</h6>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="feature-item">
+                    <img src="../static/images/airtime.png" alt="" class="feature-icon">
+                    <h6>Recargas y Facturas</h6>
+                </div>
             </div>
         </div>
-    
-        {% endfor %}
+    </div>
 
+    <!-- Grid de productos -->
+    <div class="product-grid">
+        {% for item in items %}
+        <div class="product-card">
+            <img src="{{ item.product_picture }}" alt="{{ item.product_name }}" class="product-image">
+            <h3 class="product-name">{{ item.product_name }}</h3>
+            <div class="price-container">
+                <p class="product-price">S/. {{ item.current_price }}</p>
+                <p class="previous-price">S/. {{ item.previous_price }}</p>
+            </div>
+            <p class="stock-info">{{ item.in_stock }} Artículos Disponibles</p>
+            <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-add-cart">
+                Agregar al Carrito
+            </a>
+        </div>
+        {% endfor %}
     </div>
 </div>
-
-
 {% endblock %}

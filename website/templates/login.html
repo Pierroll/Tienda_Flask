@@ -1,35 +1,31 @@
 {% extends 'forms.html' %}
 
-{% block title %} Login {% endblock %}
+{% block title %}Iniciar Sesión{% endblock %}
 
 {% block body %}
 
-<!-- Login section start -->
-
+<!-- Sección de inicio de sesión -->
 <section class="base" id="base-signup">
     <div class="base-content">
         <div class="form">
             <h3>
-                Login to start <br> Shopping
+                Inicia sesión para<br>comenzar a comprar
             </h3>
             
             <hr class="first">
             <form method="POST">
                 {{ form.hidden_tag() }}
 
-                <div class="email"><h4>Email Address</h4>{{ form.email }} <hr></div>
-                <div class="password"><h4>Password</h4>{{ form.password }} <hr></div>
+                <div class="email"><h4>Correo Electrónico</h4>{{ form.email }} <hr></div>
+                <div class="password"><h4>Contraseña</h4>{{ form.password }} <hr></div>
 
                 <div class="buttons">
-                    <a href="/sign-up"> Sign Up</a>
-                    {{ form.submit() }}
+                    <a href="/sign-up">Regístrate</a>
+                    {{ form.submit(value="Iniciar Sesión") }}
                 </div>
-
-
             </form>
         </div>
     </div>
 </section>
-
 
 {% endblock %}

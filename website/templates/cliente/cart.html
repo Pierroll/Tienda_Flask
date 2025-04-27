@@ -2,6 +2,136 @@
 
 {% block title %} Cart {% endblock %}
 
+{% block styles %}
+<style>
+    :root {
+        --orange-border: #ff9900;
+        --orange-glow: rgba(255, 153, 0, 0.2);
+        --orange-gradient: linear-gradient(45deg, #ff9900, #ffb700);
+    }
+
+    .container {
+        padding: 2rem 0;
+    }
+
+    h1 {
+        color: var(--text-color) !important;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .card {
+        background: var(--nav-bg);
+        border: 1px solid var(--orange-border);
+        border-radius: 15px;
+        box-shadow: 0 5px 15px var(--orange-glow);
+        overflow: hidden;
+    }
+
+    .card-body {
+        padding: 2rem;
+    }
+
+    .img-thumbnail {
+        background: var(--bg-color);
+        border: 1px solid var(--orange-border);
+        border-radius: 10px;
+        padding: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .img-thumbnail:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px var(--orange-glow);
+    }
+
+    h3 {
+        color: var(--text-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    label {
+        color: var(--text-color);
+        font-weight: 600;
+        margin-right: 1rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px var(--orange-glow);
+    }
+
+    .btn-secondary {
+        background: var(--nav-bg);
+        border: 1px solid var(--orange-border);
+        color: var(--text-color);
+    }
+
+    .btn-primary {
+        background: var(--orange-gradient);
+        border: none;
+        color: white;
+    }
+
+    .fas {
+        color: var(--orange-border);
+        transition: all 0.3s ease;
+    }
+
+    .fas:hover {
+        transform: scale(1.1);
+        color: var(--text-color);
+    }
+
+    .list-group-item {
+        background: transparent;
+        border-color: var(--orange-border);
+        color: var(--text-color);
+    }
+
+    .list-group-item:first-child {
+        border-top: none;
+    }
+
+    strong {
+        color: var(--orange-border);
+    }
+
+    small {
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+
+    hr {
+        border-color: var(--orange-border);
+        opacity: 0.2;
+    }
+
+    #quantity {
+        color: var(--text-color);
+        font-weight: 600;
+        margin: 0 1rem;
+    }
+
+    .remove-cart {
+        color: #e74c3c;
+        font-weight: 600;
+    }
+
+    .remove-cart:hover {
+        color: #c0392b;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
 
 {% block body %}
 
@@ -9,7 +139,7 @@
     <div class="row">
         {% if cart %}
 
-        <h1 class="text-center mb-5" style="color: white;">Shopping Cart</h1>
+        <h1 class="text-center mb-5">Shopping Cart</h1>
         <div class="col-sm-8">
             <div class="card">
                 <div class="card-body">
@@ -80,7 +210,7 @@
 
         {% else %}
 
-        <h1 class="text-center mb-5" style="color: white;">Your Cart is Empty</h1>
+        <h1 class="text-center mb-5">Your Cart is Empty</h1>
 
         {% endif %}
     </div>
