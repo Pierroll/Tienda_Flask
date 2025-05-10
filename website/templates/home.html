@@ -310,7 +310,9 @@
     <div class="product-grid">
         {% for item in items %}
         <div class="product-card">
-            <img src="{{ item.product_picture }}" alt="{{ item.product_name }}" class="product-image">
+            
+            <img src="{{ item.product_picture }}" loading="lazy" alt="{{ item.product_name }}" class="product-image">
+
             <h3 class="product-name">{{ item.product_name }}</h3>
             <div class="price-container">
                 <p class="product-price">S/. {{ item.current_price }}</p>
