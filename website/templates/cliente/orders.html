@@ -1,75 +1,391 @@
 {% extends 'base.html' %}
 
-{% block title %} Orders {% endblock %}
+{% block title %} Mis Pedidos {% endblock %}
 
 {% block body %}
+<style>
+    :root {
+        --primary-color: #ff9900;
+        --primary-light: #ffb84d;
+        --primary-dark: #e68a00;
+        --bg-color: #121212;
+        --nav-bg: #1e1e1e;
+        --card-bg: #1e1e1e;
+        --max-container: 1200px;
+        --text-color: #f0f0f0;
+        --text-muted: #a0aec0;
+        --border-color: #2d3748;
+        --text-light: #e2e8f0;
+        --border-color: #e0e0e0;
+        --success-color: #28a745;
+        --info-color: #17a2b8;
+        --warning-color: #ffc107;
+        --danger-color: #dc3545;
+    }
 
-<div class="container my-5">
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
 
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-dark);
+        font-weight: 500;
+        padding: 0.5rem 1.5rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .order-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        margin: 0 auto 20px;
+        max-width: var(--max-container);
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 15px 25px;
+        color: white;
+        position: relative;
+    }
+
+    .order-header small {
+        opacity: 0.95;
+        font-size: 0.95rem;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .order-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .order-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        background: var(--card-bg);
+        color: var(--text-light);
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .order-item:hover {
+        background-color: rgba(255, 153, 0, 0.03);
+    }
+
+    .product-img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 4px;
+        background: #2a2d31;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
+    }
+    
+    .product-img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .total-amount {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: white;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+        margin: 8px 0 4px;
+        background-color: #2a2d31;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease;
+    }
+    .status-item {
+        background: #2a2d31;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        height: 100%;
+        transition: all 0.3s ease;
+        color: var(--text-color);
+    }
+    
+    .status-item.active {
+        border-color: var(--primary-color);
+        background: linear-gradient(135deg, rgba(255, 153, 0, 0.1), rgba(255, 153, 0, 0.05));
+        box-shadow: 0 2px 8px rgba(255, 153, 0, 0.1);
+    }
+    
+    .status-icon {
+        width: 36px;
+        height: 36px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        color: white;
+        font-size: 1rem;
+    }
+    
+    .status-item.active .status-icon {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .status-title {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 1rem;
+        color: var(--text-color);
+    }
+    
+    .status-desc {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        line-height: 1.4;
+    }
+    
+    .badge {
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 0.4em 0.8em;
+        color: white;
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    .order-header h4 {
+        font-size: 1.3rem;
+        margin: 0;
+        color: white;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    .product-info h6 {
+        font-size: 1.05rem;
+        margin-bottom: 0.35rem;
+        color: var(--text-light);
+        font-weight: 500;
+    }
+    
+    @media (max-width: 768px) {
+        .status-item {
+            margin-bottom: 15px;
+        }
+        
+        .order-header {
+            flex-direction: column;
+            text-align: left;
+        }
+        
+        .order-header > div:first-child {
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3" style="color: var(--primary-color); font-size: 2.2rem; letter-spacing: -0.5px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            <i class="fas fa-shopping-bag me-2"></i>Mis Pedidos
+        </h1>
+        <p class="mb-0" style="color: var(--primary-light); font-size: 1.1rem; letter-spacing: 0.5px; font-weight: 400;">
+            Revisa el estado de tus compras recientes
+        </p>
+    </div>
+    
     <div class="row">
         {% if orders %}
-
-        <h1 class="text-center mb-5" style="color: white;">Orders</h1>
-        <div class="col-sm-13">
-            <div class="card">
-                <div class="card-body">
-                    <!-- <h3>Orders</h3> -->
-                    {% for item in orders %}
-
-                    <div class="row">
-                        <div class="col-sm-3 text-center align-self-center">
-                            <img src="{{ item.product.product_picture }}" alt="" class="img-fluid img-thumbnail shadow-sm" height="150px" width="150px">
+            {% for order in orders %}
+            <div class="col-12 mb-4">
+                <div class="order-card">
+                    <div class="order-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="mb-0 fw-bold d-flex align-items-center" style="font-size: 1.25rem;">
+                                <i class="fas fa-receipt me-2" style="opacity: 0.9;"></i>
+                                Pedido #{{ order.id }}
+                            </h4>
+                            <small class="text-white-90 d-block mt-1">
+                                <i class="far fa-clock me-1"></i>
+                                {{ order.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            </small>
                         </div>
-                        <div class="col-sm-7">
-                            
-                            <h3>{{ item.product.product_name }}</h3>
-                            <p class="mb-2 text-muted small">Quantity: {{ item.quantity }}</p>
-                            <p class="mb-2 text-muted small">Price: Ksh {{ item.price }}</p>
-                               
-                                
-                            <div class="col-sm-4">
-                                <p>Order Status: {{ item.status }}</p>
-                                {% if item.status == 'Pending' %}
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: 20%;"  aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                {% elif item.status == 'Accepted' %}
-                                <div class="progress">
-                                    <div class="progress-bar bg-info" role="progressbar" style="width: 40%;"  aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                {% elif item.status == 'Out for delivery' %}
-                                <div class="progress">
-                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 70%;"  aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                {% elif item.status == 'Delivered' %}
-                                <div class="progress">
-                                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%;"  aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-
-                                {% elif item.status == 'Canceled' %}
-                                <div class="progress">
-                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 100%;"  aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
+                        <div class="text-end">
+                            <div class="badge px-3 py-1 mb-1" style="font-size: 0.85rem; background: rgba(255, 255, 255, 0.2);">
+                                {% if order.status == 'Delivered' %}
+                                    <i class="fas fa-check-circle me-1"></i> Entregado
+                                {% elif order.status == 'Pending' %}
+                                    <i class="fas fa-clock me-1"></i> Pendiente
+                                {% elif order.status == 'Accepted' %}
+                                    <i class="fas fa-check me-1"></i> Aceptado
+                                {% elif order.status == 'Out for delivery' %}
+                                    <i class="fas fa-truck me-1"></i> En camino
+                                {% elif order.status == 'Canceled' %}
+                                    <i class="fas fa-times-circle me-1"></i> Cancelado
+                                {% else %}
+                                    {{ order.status }}
                                 {% endif %}
                             </div>
-                            
+                            <div class="total-amount">
+                                <span class="fw-bold" style="font-size: 1.25rem;">S/ {{ '%.2f'|format(order.total) }}</span>
+                            </div>
                         </div>
                     </div>
-                    <hr class="text-muted">
-                    {% endfor %}
+                    
+                    <div class="p-3">
+                        <h5 class="mb-3 text-primary d-flex align-items-center" style="font-size: 1.1rem;">
+                            <i class="fas fa-box-open me-2"></i>
+                            Productos del pedido
+                        </h5>
+                            
+                            {% for item in order.items %}
+                            <div class="order-item d-flex align-items-center">
+                                <div class="me-3 position-relative">
+                                    <img src="{{ item.product.product_picture if item.product.product_picture else url_for('static', filename='images/default-product.jpg') }}" 
+                                         alt="{{ item.product.product_name }}" class="product-img">
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                                        {{ item.quantity }}
+                                    </span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1 fw-bold" style="font-size: 1rem;">{{ item.product.product_name }}</h6>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <span class="text-muted me-2">{{ item.quantity }} x</span>
+                                                <span class="text-white">S/ {{ '%0.2f'|format(item.price) }}</span>
+                                            </div>
+                                            <div class="fw-bold text-primary">
+                                                S/ {{ '%0.2f'|format(item.price * item.quantity) }}
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="p-3" style="background-color: #f9fafb; border-top: 1px solid #f0f0f0;">
+                        <h5 class="mb-3 text-primary d-flex align-items-center" style="font-size: 1.1rem;">
+                            <i class="fas fa-truck me-2"></i>
+                            Seguimiento del pedido
+                        </h5>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="status-item {% if order.status == 'Delivered' or order.status == 'Canceled' %}active{% endif %}">
+                                        <div class="status-icon">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div class="status-text">
+                                            <div class="status-title" style="color: var(--primary-color);">Pedido realizado</div>
+                                            <div class="status-desc">Hemos recibido tu pedido</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="status-item {% if order.status in ['Accepted', 'Out for delivery', 'Delivered', 'Canceled'] %}active{% endif %}">
+                                        <div class="status-icon">
+                                            <i class="fas {% if order.status in ['Accepted', 'Out for delivery', 'Delivered', 'Canceled'] %}fa-check{% else %}fa-spinner fa-spin{% endif %}"></i>
+                                        </div>
+                                        <div class="status-text">
+                                            <div class="status-title" style="color: var(--primary-color);">En preparación</div>
+                                            <div class="status-desc">Preparando tu pedido</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="status-item {% if order.status in ['Out for delivery', 'Delivered'] %}active{% endif %}">
+                                        <div class="status-icon">
+                                            <i class="fas {% if order.status in ['Out for delivery', 'Delivered'] %}fa-check{% else %}fa-truck{% endif %}"></i>
+                                        </div>
+                                        <div class="status-text">
+                                            <div class="status-title" style="color: var(--primary-color);">En camino</div>
+                                            <div class="status-desc">En ruta de entrega</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="status-item {% if order.status == 'Delivered' %}active{% endif %}">
+                                        <div class="status-icon">
+                                            <i class="fas {% if order.status == 'Delivered' %}fa-check{% else %}fa-home{% endif %}"></i>
+                                        </div>
+                                        <div class="status-text">
+                                            <div class="status-title" style="color: var(--primary-color);">Entregado</div>
+                                            <div class="status-desc">¡Disfruta tu compra!</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if order.status == 'Delivered' %}
+                            <div class="mt-3 pt-3 border-top text-center">
+                                <a href="{{ url_for('views.home') }}" class="btn btn-primary">
+                                    <i class="fas fa-redo-alt me-2"></i> Realizar otra compra
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
+            {% endfor %}
         {% else %}
-        <h1 class="text-center mb-5" style="color: white;">You have no Orders</h1>
-
+            <div class="col-12">
+                <div class="text-center p-5" style="max-width: 500px; margin: 0 auto;">
+                    <div class="bg-light p-4 rounded-3">
+                        <i class="fas fa-shopping-bag fa-4x text-muted mb-3"></i>
+                        <h4 class="fw-bold mb-2">No hay pedidos</h4>
+                        <p class="text-muted mb-4">Aún no has realizado ningún pedido. Descubre nuestros productos y haz tu primera compra.</p>
+                        <a href="{{ url_for('views.home') }}" class="btn btn-primary px-4">
+                            <i class="fas fa-shopping-bag me-2"></i> Ver catálogo
+                        </a>
+                    </div>
+                </div>
+            </div>
         {% endif %}
     </div>
-
 </div>
 
 {% endblock %}

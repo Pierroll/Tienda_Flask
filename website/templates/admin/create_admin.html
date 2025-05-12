@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Administrador{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="h4 mb-0"><i class="fas fa-user-plus me-2"></i>Nuevo Administrador</h3>
+                        <a href="{{ url_for('admin.admin_management') }}" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-arrow-left me-1"></i> Volver
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" action="{{ url_for('admin.create_admin') }}" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-4">
+                            <!-- Sección de Información Básica -->
+                            <div class="col-12">
+                                <div class="bg-light p-3 rounded-3 mb-4">
+                                    <h5 class="mb-3 text-primary"><i class="fas fa-user-circle me-2"></i>Información Básica</h5>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else ""), 
+                                                             placeholder="Usuario", id="username") }}
+                                                <label for="username">{{ form.username.label.text }}</label>
+                                                {% if form.username.errors %}
+                                                    {% for error in form.username.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), 
+                                                             type="email", placeholder="Correo", id="email") }}
+                                                <label for="email">{{ form.email.label.text }}</label>
+                                                {% if form.email.errors %}
+                                                    {% for error in form.email.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Contraseña -->
+                            <div class="col-12">
+                                <div class="bg-light p-3 rounded-3 mb-4">
+                                    <h5 class="mb-3 text-primary"><i class="fas fa-lock me-2"></i>Seguridad</h5>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), 
+                                                             placeholder="Contraseña", id="password") }}
+                                                <label for="password">{{ form.password.label.text }}</label>
+                                                <small class="form-text text-muted">Mínimo 8 caracteres</small>
+                                                {% if form.password.errors %}
+                                                    {% for error in form.password.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else ""), 
+                                                                     placeholder="Confirmar contraseña", id="confirm_password") }}
+                                                <label for="confirm_password">{{ form.confirm_password.label.text }}</label>
+                                                {% if form.confirm_password.errors %}
+                                                    {% for error in form.confirm_password.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <div class="form-check form-switch">
+                                                {{ form.force_password_change(class="form-check-input" + (" is-invalid" if form.force_password_change.errors else ""), 
+                                                                         role="switch", id="force_password_change") }}
+                                                <label class="form-check-label" for="force_password_change">
+                                                    {{ form.force_password_change.label.text }}
+                                                </label>
+                                                <small class="text-muted d-block">El usuario deberá cambiar su contraseña en el primer inicio de sesión</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Rol y Seguridad -->
+                            <div class="col-12">
+                                <div class="bg-light p-3 rounded-3 mb-4">
+                                    <h5 class="mb-3 text-primary"><i class="fas fa-shield-alt me-2"></i>Permisos y Seguridad</h5>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-floating">
+                                                {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else ""), 
+                                                           id="role") }}
+                                                <label for="role">{{ form.role.label.text }}</label>
+                                                {% if form.role.errors %}
+                                                    {% for error in form.role.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-floating mb-3">
+                                                {{ form.security_question1(class="form-control" + (" is-invalid" if form.security_question1.errors else ""), 
+                                                                   placeholder="Pregunta de seguridad 1", id="security_question1") }}
+                                                <label for="security_question1">{{ form.security_question1.label.text }}</label>
+                                                {% if form.security_question1.errors %}
+                                                    {% for error in form.security_question1.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-floating mb-3">
+                                                {{ form.security_answer1(class="form-control" + (" is-invalid" if form.security_answer1.errors else ""), 
+                                                                 placeholder="Respuesta de seguridad 1", id="security_answer1") }}
+                                                <label for="security_answer1">{{ form.security_answer1.label.text }}</label>
+                                                {% if form.security_answer1.errors %}
+                                                    {% for error in form.security_answer1.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-floating mb-3">
+                                                {{ form.security_question2(class="form-control" + (" is-invalid" if form.security_question2.errors else ""), 
+                                                                   placeholder="Pregunta de seguridad 2", id="security_question2") }}
+                                                <label for="security_question2">{{ form.security_question2.label.text }}</label>
+                                                {% if form.security_question2.errors %}
+                                                    {% for error in form.security_question2.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                            <div class="form-floating">
+                                                {{ form.security_answer2(class="form-control" + (" is-invalid" if form.security_answer2.errors else ""), 
+                                                                 placeholder="Respuesta de seguridad 2", id="security_answer2") }}
+                                                <label for="security_answer2">{{ form.security_answer2.label.text }}</label>
+                                                <small class="form-text text-muted">Esta información se usará para recuperar el acceso si es necesario</small>
+                                                {% if form.security_answer2.errors %}
+                                                    {% for error in form.security_answer2.errors %}
+                                                        <div class="invalid-feedback">{{ error }}</div>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="fas fa-undo me-1"></i> Limpiar
+                            </button>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('admin.admin_management') }}" class="btn btn-outline-danger">
+                                    <i class="fas fa-times me-1"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Guardar Administrador
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #3f51b5 0%, #2196f3 100%);
+    }
+    .form-floating > label {
+        color: #6c757d;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #3f51b5;
+        box-shadow: 0 0 0 0.25rem rgba(63, 81, 181, 0.25);
+    }
+    .btn-primary {
+        background-color: #3f51b5;
+        border-color: #3f51b5;
+    }
+    .btn-primary:hover {
+        background-color: #303f9f;
+        border-color: #283593;
+    }
+    .form-check-input:checked {
+        background-color: #3f51b5;
+        border-color: #3f51b5;
+    }
+</style>
+
+<script>
+// Validación del formulario
+(function () {
+    'use strict'
+    
+    var forms = document.querySelectorAll('.needs-validation')
+    
+    Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+
+                form.classList.add('was-validated')
+            }, false)
+        })
+})()
+</script>
+{% endblock %}

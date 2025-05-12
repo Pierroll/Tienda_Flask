@@ -20,6 +20,15 @@
                 <div class="name"><h4>Nombre de Usuario</h4>{{ form.username }} <hr></div>
                 <div class="password"><h4>Contraseña</h4>{{ form.password1 }} <hr></div>
                 <div class="password"><h4>Confirmar Contraseña</h4>{{ form.password2 }} <hr></div>
+                <div class="mb-3">
+                    {{ form.new_password.label(class="form-label") }}
+                    {{ form.new_password(class="form-control") }}
+                    <small class="form-text text-muted">Déjalo vacío si no quieres cambiar tu contraseña.</small>
+                </div>
+                <div class="mb-3">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control") }}
+                </div>
 
                 <div class="buttons">
                     <a href="/login">Inicia Sesión</a>

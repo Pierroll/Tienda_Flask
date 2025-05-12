@@ -2,42 +2,189 @@
 
 {% block title %}Agregar Producto{% endblock %}
 
-{% block body %}
-<div class="container mt-4">
-    <div class="card">
-        <div class="card-header">
-            <h3>Agregar Nuevo Producto</h3>
-        </div>
-        <div class="card-body">
-            <form method="POST" enctype="multipart/form-data">
-                {{ form.hidden_tag() }}
-                <div class="mb-3">
-                    <label class="form-label">Nombre del Producto</label>
-                    {{ form.product_name(class="form-control") }}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Agregar Nuevo Producto</h3>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Precio Actual</label>
-                    {{ form.current_price(class="form-control") }}
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">{{ form.product_name.label }}</label>
+                                    {{ form.product_name(class="form-control" + (" is-invalid" if form.product_name.errors else ""), placeholder="Ingrese el nombre del producto") }}
+                                    {% if form.product_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.product_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">{{ form.category_id.label }}</label>
+                                    {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                                    {% if form.category_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.category_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ form.description.label }}</label>
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3", placeholder="Ingrese una descripción del producto") }}
+                            <div class="form-text">Máximo 500 caracteres</div>
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">{{ form.current_price.label }}</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.current_price(class="form-control" + (" is-invalid" if form.current_price.errors else ""), step="0.01") }}
+                                    </div>
+                                    {% if form.current_price.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.current_price.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label">{{ form.previous_price.label }}</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.previous_price(class="form-control" + (" is-invalid" if form.previous_price.errors else ""), step="0.01") }}
+                                    </div>
+                                    {% if form.previous_price.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.previous_price.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">{{ form.stock_quantity.label }}</label>
+                                    {{ form.stock_quantity(class="form-control" + (" is-invalid" if form.stock_quantity.errors else "")) }}
+                                    {% if form.stock_quantity.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.stock_quantity.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">{{ form.product_picture.label }}</label>
+                                    {{ form.product_picture(class="form-control" + (" is-invalid" if form.product_picture.errors else "")) }}
+                                    <div class="form-text">Formatos permitidos: JPG, JPEG, PNG, GIF</div>
+                                    {% if form.product_picture.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.product_picture.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label fw-bold">Disponibilidad</label>
+                                    <div class="form-check form-switch mt-2">
+                                        {{ form.in_stock(class="form-check-input" + (" is-invalid" if form.in_stock.errors else ""), role="switch") }}
+                                        <label class="form-check-label" for="{{ form.in_stock.id }}">
+                                            {{ 'En stock' if form.in_stock.data else 'Sin stock' }}
+                                        </label>
+                                        {% if form.in_stock.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.in_stock.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mt-3">
+                                    <div class="form-check form-switch">
+                                        {{ form.flash_sale(class="form-check-input" + (" is-invalid" if form.flash_sale.errors else ""), role="switch") }}
+                                        <label class="form-check-label fw-bold" for="{{ form.flash_sale.id }}">
+                                            {{ form.flash_sale.label.text }}
+                                        </label>
+                                        {% if form.flash_sale.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {% for error in form.flash_sale.errors %}
+                                                    {{ error }}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-text">Activar para mostrar este producto en oferta flash</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('views.list_products') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i> Cancelar
+                            </a>
+                            {{ form.add_product(class="btn btn-primary") }}
+                        </div>
+                    </form>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Precio Anterior</label>
-                    {{ form.previous_price(class="form-control") }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Stock</label>
-                    {{ form.in_stock(class="form-control") }}
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Imagen del Producto</label>
-                    {{ form.product_picture(class="form-control") }}
-                </div>
-                <div class="mb-3 form-check">
-                    {{ form.flash_sale(class="form-check-input") }}
-                    <label class="form-check-label">Oferta Flash</label>
-                </div>
-                {{ form.add_product(class="btn btn-primary") }}
-            </form>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Script para actualizar etiqueta de stock -->
+<script>
+    document.getElementById('{{ form.in_stock.id }}').addEventListener('change', function() {
+        const label = this.nextElementSibling;
+        label.textContent = this.checked ? 'En stock' : 'Sin stock';
+    });
+</script>
 {% endblock %}

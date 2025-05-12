@@ -17,6 +17,45 @@
         color: var(--theme-text);
         border: 1px solid var(--theme-border);
     }
+
+    /* Card hover effect */
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Price styling */
+    .price {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    /* Stock badge */
+    .stock-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    /* View toggle buttons */
+    .view-toggle .btn {
+        border-radius: 0;
+    }
+    .view-toggle .btn:first-child {
+        border-top-left-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+    }
+    .view-toggle .btn:last-child {
+        border-top-right-radius: 0.25rem;
+        border-bottom-right-radius: 0.25rem;
+    }
+    .view-toggle .btn.active {
+        background-color: #0d6efd;
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -34,46 +73,57 @@
     </div>
 
     <!-- Filtro de Búsqueda -->
-<div class="search-section p-3 rounded shadow-sm mb-3" style="border: 2px solid #ff6600;">
-    <form method="GET" class="row g-3">
-        <div class="col-md-4">
-            <label class="form-label">Categoría</label>
-            <select name="category" class="form-select">
-                <option value="">Todas las categorías</option>
-                {% for category in categories %}
-                <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
-                    {{ category.name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
+    <div class="search-section p-3 rounded shadow-sm mb-3" style="border: 2px solid #ff6600;">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Categoría</label>
+                <select name="category" class="form-select">
+                    <option value="">Todas las categorías</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <div class="col-md-4">
-            <label class="form-label">Buscar</label>
-            <input type="text" name="search" class="form-control" placeholder="Buscar productos..." value="{{ search_query }}">
-        </div>
+            <div class="col-md-4">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="search" class="form-control" placeholder="Buscar productos..." value="{{ search_query }}">
+            </div>
 
-        <div class="col-md-4">
-            <label class="form-label">Ordenar por</label>
-            <select name="sort" class="form-select">
-                <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Nombre (A-Z)</option>
-                <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Nombre (Z-A)</option>
-                <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Precio (Menor a Mayor)</option>
-                <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Precio (Mayor a Menor)</option>
-            </select>
-        </div>
+            <div class="col-md-4">
+                <label class="form-label">Ordenar por</label>
+                <select name="sort" class="form-select">
+                    <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Nombre (A-Z)</option>
+                    <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Nombre (Z-A)</option>
+                    <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Precio (Menor a Mayor)</option>
+                    <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Precio (Mayor a Menor)</option>
+                </select>
+            </div>
 
-        <div class="col-12 d-flex justify-content-center mt-2">
-            <button type="submit" class="btn btn-primary me-2">Filtrar</button>
-            <a href="{{ url_for('views.list_products') }}" class="btn btn-secondary">Limpiar</a>
-        </div>
-    </form>
-</div>
+            <div class="col-12 d-flex justify-content-center mt-2">
+                <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                <a href="{{ url_for('views.list_products') }}" class="btn btn-secondary">Limpiar</a>
+            </div>
+        </form>
+    </div>
 
+    <!-- View Toggle Buttons -->
+    <div class="d-flex justify-content-end mb-3">
+        <div class="btn-group" role="group">
+            <button type="button" id="tableViewBtn" class="btn btn-outline-primary active">
+                <i class="fas fa-list"></i> Vista de Tabla
+            </button>
+            <button type="button" id="gridViewBtn" class="btn btn-outline-primary">
+                <i class="fas fa-th-large"></i> Vista de Cuadrícula
+            </button>
+        </div>
+    </div>
 
     <!-- Tabla de Productos -->
     {% if items %}
-    <div class="table-responsive rounded shadow-sm">
+    <div id="tableView" class="table-responsive rounded shadow-sm">
         <table class="table table-dark table-striped table-hover align-middle text-center">
             <thead class="table-primary">
                 <tr>
@@ -101,13 +151,9 @@
                     <td>${{ item.current_price }}</td>
                     <td>${{ item.previous_price }}</td>
                     <td>
-                        {% if item.in_stock > 10 %}
-                            <span class="badge bg-success">Alta</span>
-                        {% elif item.in_stock > 0 %}
-                            <span class="badge bg-warning text-dark">Media</span>
-                        {% else %}
-                            <span class="badge bg-danger">Baja</span>
-                        {% endif %}
+                        <span class="badge {% if item.stock_quantity > 10 %}bg-success{% elif item.stock_quantity > 0 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                            {{ item.stock_quantity }} en stock
+                        </span>
                     </td>
                     <td>
                         {% if item.flash_sale %}
@@ -118,27 +164,145 @@
                     </td>
                     <td>{{ item.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>
-                        {% if current_user.is_admin %}
                         <div class="d-flex gap-1 justify-content-center">
-                            <a href="{{ url_for('views.edit_item', item_id=item.id) }}" class="btn btn-sm" style="background-color: #f1c40f; border-color: #f39c12; color: black;">Editar</a>
-                            <a href="{{ url_for('views.delete_item', item_id=item.id) }}" 
-                               class="btn btn-sm" 
-                               style="background-color: #e74c3c; border-color: #c0392b; color: white;"
-                               onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">Eliminar</a>
+                            {% if current_user.is_authenticated %}
+                                {% if current_user.is_admin %}
+                                    <a href="{{ url_for('views.edit_item', item_id=item.id) }}" class="btn btn-sm" style="background-color: #f1c40f; border-color: #f39c12; color: black;">Editar</a>
+                                    <a href="{{ url_for('views.delete_item', item_id=item.id) }}" 
+                                       class="btn btn-sm" 
+                                       style="background-color: #e74c3c; border-color: #c0392b; color: white;"
+                                       onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">Eliminar</a>
+                                {% else %}
+                                    {% if item.stock_quantity > 0 %}
+                                        <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-sm" style="background-color: #2ecc71; border-color: #27ae60; color: white; width: 100%;">
+                                            <i class="fas fa-shopping-cart"></i> Agregar al Carrito
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-secondary" style="width: 100%;" disabled>
+                                            <i class="fas fa-times"></i> Agotado
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-sm btn-primary" style="width: 100%;">
+                                    <i class="fas fa-sign-in-alt"></i> Inicia sesión para comprar
+                                </a>
+                            {% endif %}
                         </div>
-                        {% else %}
-                            <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-sm" style="background-color: #2ecc71; border-color: #27ae60; color: white;">Comprar</a>
-                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- Grid View -->
+    <div id="gridView" class="d-none">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for item in items %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="position-relative">
+                        <a href="{{ item.product_picture }}" target="_blank">
+                            <img src="{{ item.product_picture }}" class="card-img-top" alt="{{ item.product_name }}" style="height: 200px; object-fit: cover;">
+                        </a>
+                        {% if item.flash_sale %}
+                        <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded">
+                            Oferta Flash
+                        </span>
+                        {% endif %}
+                        <span class="position-absolute top-0 end-0 bg-{% if item.stock_quantity > 10 %}success{% elif item.stock_quantity > 0 %}warning text-dark{% else %}danger{% endif %} text-white px-2 py-1 m-2 rounded">
+                            {{ item.stock_quantity }} en stock
+                        </span>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ item.product_name }}</h5>
+                        <div class="mb-2">
+                            <span class="h5 text-primary">${{ item.current_price }}</span>
+                            {% if item.previous_price and item.previous_price > item.current_price %}
+                            <small class="text-muted text-decoration-line-through ms-2">${{ item.previous_price }}</small>
+                            {% endif %}
+                        </div>
+                        <p class="card-text text-muted small">
+                            {{ item.description|truncate(100) if item.description else 'Sin descripción' }}
+                        </p>
+                        <div class="mt-auto">
+                            {% if current_user.is_authenticated %}
+                                {% if current_user.is_admin %}
+                                    <div class="d-grid gap-2">
+                                        <a href="{{ url_for('views.edit_item', item_id=item.id) }}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <a href="{{ url_for('views.delete_item', item_id=item.id) }}" 
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    {% if item.stock_quantity > 0 %}
+                                        <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-primary w-100">
+                                            <i class="fas fa-shopping-cart"></i> Agregar al Carrito
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-secondary w-100" disabled>
+                                            <i class="fas fa-times"></i> Agotado
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-sign-in-alt"></i> Inicia sesión para comprar
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <small class="text-muted">Agregado el {{ item.date_added.strftime('%d/%m/%Y') }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     {% else %}
     <div class="alert alert-warning text-center">
         No hay productos en la base de datos.
     </div>
     {% endif %}
+
+    <script>
+        // Toggle between table and grid view
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableViewBtn = document.getElementById('tableViewBtn');
+            const gridViewBtn = document.getElementById('gridViewBtn');
+            const tableView = document.getElementById('tableView');
+            const gridView = document.getElementById('gridView');
+
+            tableViewBtn.addEventListener('click', function() {
+                tableView.classList.remove('d-none');
+                gridView.classList.add('d-none');
+                tableViewBtn.classList.add('active');
+                gridViewBtn.classList.remove('active');
+                // Save preference
+                localStorage.setItem('productView', 'table');
+            });
+
+            gridViewBtn.addEventListener('click', function() {
+                tableView.classList.add('d-none');
+                gridView.classList.remove('d-none');
+                tableViewBtn.classList.remove('active');
+                gridViewBtn.classList.add('active');
+                // Save preference
+                localStorage.setItem('productView', 'grid');
+            });
+
+            // Load saved view preference
+            const savedView = localStorage.getItem('productView');
+            if (savedView === 'grid') {
+                gridViewBtn.click();
+            }
+        });
+    </script>
 </div>
 {% endblock %}

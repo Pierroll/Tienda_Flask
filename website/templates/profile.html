@@ -1,39 +1,229 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Mi Perfil{% endblock %}
 
-
 {% block body %}
+<div class="container mt-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-<div class="container my-5">
     <div class="row">
-        <h3 style="color: white;">Bienvenido(a) <span class="text-capitalize">{{ customer.username }}</span></h3>
-
-        <div class="col-sm-2 border-end" style="margin-top: 20px;">
-        
-            <ul class="list-unstyled">
-                <li class="d-grid"><a href="#" class="btn btn-primary">Mi Perfil</a></li>
-                <li class="d-grid"><a href="/change-password/{{ customer.id }}" class="btn btn-primary" style="margin-top: 5px;">Cambiar Contraseña</a></li>
-
-            </ul>
-         @
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if current_user.profile_picture %}
+                            <img src="{{ current_user.profile_picture }}" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;" alt="Foto de perfil">
+                        {% else %}
+                            <img src="https://via.placeholder.com/150" class="rounded-circle img-fluid mb-3" alt="Foto de perfil">
+                            <div class="alert alert-warning mt-2">Aún no has subido una foto de perfil.</div>
+                            <a href="{{ url_for('views.profile') }}#profile" class="btn btn-sm btn-primary">Subir foto ahora</a>
+                        {% endif %}
+                        <h4>{{ current_user.username or 'Sin nombre' }}</h4>
+                        <p class="text-muted">{{ current_user.email or 'Sin email' }}</p>
+                        {% if not current_user.phone_number %}
+                            <div class="alert alert-warning">No has registrado tu teléfono.</div>
+                        {% endif %}
+                        {% if not current_user.address %}
+                            <div class="alert alert-warning">No has registrado tu dirección.</div>
+                        {% endif %}
+                        <a href="{{ url_for('views.profile') }}#profile" class="btn btn-sm btn-secondary mt-2">Editar Perfil</a>
+                        {% if current_user.role == 'super_admin' %}
+                            <span class="badge bg-primary">Super Admin</span>
+                        {% elif current_user.role == 'admin' %}
+                            <span class="badge bg-info">Admin</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Usuario</span>
+                        {% endif %}
+                    </div>
+                    <div class="list-group">
+                        <a href="#profile" class="list-group-item list-group-item-action active" data-bs-toggle="list">Información Personal</a>
+                        <a href="#security" class="list-group-item list-group-item-action" data-bs-toggle="list">Seguridad</a>
+                        {% if current_user.role != 'super_admin' and current_user.role != 'admin' %}
+                            <a href="#orders" class="list-group-item list-group-item-action" data-bs-toggle="list">Mis Pedidos</a>
+                        {% endif %}
+                        <a href="#preferences" class="list-group-item list-group-item-action" data-bs-toggle="list">Preferencias</a>
+                        {% if current_user.role == 'super_admin' %}
+                            <a href="{{ url_for('admin.admin_management') }}" class="list-group-item list-group-item-action text-success">
+                                <i class="fas fa-user-plus me-2"></i>Gestión de Administradores
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="col-sm-5 offset-sm-1" style="background-color: white; border-radius: 18px; margin-top: 20px;">
-            <div class="row">
-
-                <div class="col-sm-8">
-                    <div class="card m-2">
-
-                        <h3>{{ customer.username }}</h3>
-                        <p>Correo: {{ customer.email }}</p>
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="tab-content">
+                <!-- Profile Information -->
+                <div class="tab-pane fade show active" id="profile">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Información Personal</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('views.update_profile') }}" enctype="multipart/form-data">
+                                {{ form.csrf_token }}
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Nombre de Usuario</label>
+                                    <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ current_user.email }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Teléfono</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" value="{{ current_user.phone_number }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Dirección</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3">{{ current_user.address }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">Biografía</label>
+                                    <textarea class="form-control" id="bio" name="bio" rows="3">{{ current_user.bio }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="profile_picture" class="form-label">Foto de Perfil</label>
+                                    <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/png, image/jpeg, image/jpg, image/gif">
+                                    <small class="text-muted">Formatos permitidos: PNG, JPG, JPEG, GIF</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Security Settings -->
+                <div class="tab-pane fade" id="security">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configuración de Seguridad</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('auth.change_password') }}">
+                                {{ form.csrf_token }}
+                                <div class="mb-3">
+                                    <label for="current_password" class="form-label">Contraseña Actual</label>
+                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="new_password" class="form-label">Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders -->
+                {% if current_user.role != 'super_admin' and current_user.role != 'admin' %}
+                <div class="tab-pane fade" id="orders">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Mis Pedidos</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Fecha</th>
+                                            <th>Total</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if current_user.orders %}
+                                            {% for order in current_user.orders %}
+                                                <tr>
+                                                    <td>{{ order.id }}</td>
+                                                    <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                                                    <td>${{ "%.2f"|format(order.total) }}</td>
+                                                    <td>
+                                                        <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' }}">
+                                                            {{ order.status }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="#" class="btn btn-sm btn-info">Ver Detalles</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="5" class="text-center">No hay pedidos disponibles</td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Preferences -->
+                <div class="tab-pane fade" id="preferences">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Preferencias</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ url_for('views.update_preferences') }}">
+                                {{ form.csrf_token }}
+                                <div class="mb-3">
+                                    <label class="form-label">Notificaciones</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="email_notifications" name="email_notifications" 
+                                            {% if current_user.get_preferences().get('email_notifications', True) %}checked{% endif %}>
+                                        <label class="form-check-label" for="email_notifications">
+                                            Recibir notificaciones por email
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="sms_notifications" name="sms_notifications"
+                                            {% if current_user.get_preferences().get('sms_notifications', False) %}checked{% endif %}>
+                                        <label class="form-check-label" for="sms_notifications">
+                                            Recibir notificaciones por SMS
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Privacidad</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="show_profile" name="show_profile"
+                                            {% if current_user.get_preferences().get('show_profile', True) %}checked{% endif %}>
+                                        <label class="form-check-label" for="show_profile">
+                                            Mostrar mi perfil público
+                                        </label>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Guardar Preferencias</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-        
         </div>
     </div>
 </div>
-
 {% endblock %}

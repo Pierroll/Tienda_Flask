@@ -1,0 +1,218 @@
+/* Search Results Styles */
+.search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-suggestions {
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 0.25rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.search-suggestions .suggestion-item {
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    color: #212529;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+}
+
+.search-suggestions .suggestion-item:hover,
+.search-suggestions .suggestion-item.active {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+    font-weight: 500;
+}
+
+.search-suggestions .suggestion-item i {
+    width: 20px;
+    text-align: center;
+    opacity: 0.6;
+    margin-right: 0.5rem;
+}
+
+/* Filter sidebar */
+.filter-card {
+    margin-bottom: 1.5rem;
+}
+
+.filter-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+}
+
+/* Product cards */
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.product-img {
+    height: 200px;
+    object-fit: contain;
+    padding: 1.5rem;
+    background: #fff;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-img {
+    transform: scale(1.03);
+}
+
+/* Price styling */
+.product-price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #198754;
+    margin-right: 0.5rem;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-left: 0.5rem;
+}
+
+/* Stock status */
+.in-stock {
+    color: #198754;
+    font-weight: 500;
+}
+
+.out-of-stock {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+/* Loading and No Results */
+#searchLoading {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    color: #6c757d;
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.no-results i {
+    font-size: 3rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+/* Animation for search suggestions */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .product-img {
+        height: 160px;
+    }
+    
+    .search-container {
+        margin-bottom: 1rem;
+    }
+    
+    .product-card {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Dark mode support */
+[data-theme="dark"] .search-suggestions {
+    background-color: #2d2d2d;
+    border-color: #404040;
+}
+
+[data-theme="dark"] .search-suggestions .suggestion-item {
+    color: #e9ecef;
+    background-color: #2d2d2d;
+}
+
+[data-theme="dark"] .search-suggestions .suggestion-item:hover,
+[data-theme="dark"] .search-suggestions .suggestion-item.active {
+    background-color: #3a3a3a;
+    color: #fff;
+}
+
+[data-theme="dark"] .filter-card .card-header {
+    background-color: #2d2d2d;
+    border-bottom-color: #404040;
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .product-card {
+    background-color: #2d2d2d;
+    color: #e9ecef;
+    border-color: #404040;
+}
+
+[data-theme="dark"] .product-card .card-body {
+    border-top: 1px solid #404040;
+}
+
+[data-theme="dark"] .product-card .card-title,
+[data-theme="dark"] .product-card .product-price {
+    color: #fff;
+}
+
+[data-theme="dark"] .product-card .text-muted {
+    color: #adb5bd !important;
+}
+
+[data-theme="dark"] .page-link {
+    background-color: #2d2d2d;
+    border-color: #404040;
+    color: #e9ecef;
+}
+
+[data-theme="dark"] .page-item.active .page-link {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+/* Button hover effects */
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary {
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - Productos{% endblock %}
+
+{% block body %}
+{% set per_page = 20 %}
+<style>
+    /* Estilos generales */
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #2980b9;
+        --accent-color: #e74c3c;
+        --text-color: #2c3e50;
+        --light-gray: #ecf0f1;
+        --gray: #95a5a6;
+        --dark-gray: #7f8c8d;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --white: #ffffff;
+        --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+    }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f6fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Contenedor principal */
+    .tienda-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px 15px;
+    }
+    
+    .header-top {
+        margin-bottom: 20px;
+    }
+
+    /* Encabezado */
+    .tienda-header {
+        margin-bottom: 20px;
+        padding: 15px 0;
+        border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .tienda-header h1 {
+        font-weight: 700;
+        margin: 0;
+        color: #2c3e50;
+    }
+    
+    /* Barra de búsqueda */
+    .search-container {
+        margin: 20px 0;
+    }
+    
+    .search-form {
+        display: flex;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 2px solid #ddd;
+        border-radius: 25px 0 0 25px;
+        font-size: 16px;
+        outline: none;
+        transition: var(--transition);
+    }
+    
+    .search-input:focus {
+        border-color: var(--primary-color);
+    }
+    
+    .search-button {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0 20px;
+        border-radius: 0 25px 25px 0;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+    
+    .search-button:hover {
+        background: var(--secondary-color);
+    }
+    
+    /* Filtros */
+    .filters {
+        margin: 20px 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .filters span {
+        font-weight: 600;
+        color: var(--dark-gray);
+    }
+    
+    .filter-btn {
+        padding: 5px 15px;
+        background: var(--light-gray);
+        border-radius: 15px;
+        color: var(--text-color);
+        text-decoration: none;
+        font-size: 14px;
+        transition: var(--transition);
+    }
+    
+    .filter-btn:hover, .filter-btn.active {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-volver {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #4a6baf;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 8px 15px;
+        border-radius: 6px;
+        background: #f0f4ff;
+        margin-bottom: 15px;
+    }
+
+    .btn-volver:hover {
+        background: #e0e8ff;
+    }
+
+    .tienda-titulo {
+        font-size: 28px;
+        color: #2c3e50;
+        margin: 10px 0;
+    }
+
+    /* Grid de productos */
+    .productos-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 25px;
+        padding: 15px 0;
+    }
+
+    /* Tarjeta de producto */
+    .producto-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .producto-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .producto-imagen-container {
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: #fff;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .producto-imagen {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+    
+    .producto-imagen-placeholder {
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+        color: #bdc3c7;
+        font-size: 2.5rem;
+    }
+
+    .producto-info {
+        padding: 18px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .producto-acciones {
+        padding: 0 15px 15px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #f5f5f5;
+    }
+
+    .producto-nombre {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 42px;
+    }
+
+    .producto-precio {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #e74c3c;
+        margin-right: 8px;
+    }
+
+    .producto-precio-anterior {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        text-decoration: line-through;
+    }
+
+    .producto-stock {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        color: #27ae60;
+        margin: 3px 0;
+    }
+
+    .sin-stock {
+        color: #e74c3c;
+    }
+
+    .btn-comprar {
+        width: 100%;
+        padding: 8px 15px;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: block;
+        text-decoration: none;
+    }
+    
+    .btn-comprar:disabled {
+        background-color: #95a5a6 !important;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    .btn-comprar:active {
+        transform: translateY(0);
+    }
+
+    .producto-categoria {
+        font-size: 13px;
+        color: #7f8c8d;
+        margin: 2px 0;
+    }
+    
+    .producto-codigo {
+        font-size: 12px;
+        color: #95a5a6;
+        margin: 2px 0;
+    }
+
+    /* Paginación */
+    .pagination {
+        margin: 20px 0;
+    }
+    
+    .page-link, .current-page, .ellipsis {
+        padding: 8px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        color: var(--text-color);
+        transition: var(--transition);
+    }
+    
+    .page-link {
+        background: var(--light-gray);
+    }
+    
+    .page-link:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .current-page {
+        background: var(--primary-color);
+        color: white;
+        font-weight: bold;
+    }
+    
+    .product-count {
+        text-align: center;
+        color: var(--gray);
+        margin-top: -15px;
+        margin-bottom: 30px;
+    }
+    
+    /* Sin productos */
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+    
+    .alert-warning {
+        background-color: #f8f9fa;
+        border-color: #f8f9fa;
+        color: #2c3e50;
+    }
+    
+    .alert-heading {
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+    
+    .alert-link {
+        font-weight: 700;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+    
+    .alert-link:hover {
+        color: #2c3e50;
+        text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .productos-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .productos-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .tienda-titulo {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<div class="tienda-container">
+    <div class="tienda-header">
+        <div class="header-top">
+            <a href="{{ url_for('views.home') }}" class="btn-volver">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <h1 class="tienda-titulo">{{ category.name }}</h1>
+        </div>
+        
+        <!-- Barra de búsqueda -->
+        <div class="search-container mb-3">
+            <form action="{{ url_for('product_blueprint.category_products', category_id=category.id) }}" method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" 
+                           name="q" 
+                           placeholder="Buscar en {{ category.name }}..." 
+                           value="{{ request.args.get('q', '') }}" 
+                           class="form-control"
+                           style="border-radius: 20px 0 0 20px;">
+                    <input type="hidden" name="category_id" value="{{ category.id }}">
+                    <button type="submit" class="btn btn-warning" style="border-radius: 0 20px 20px 0;">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </form>
+            {% if request.args.get('q') %}
+            <div class="mt-2">
+                <small class="text-muted">
+                    Buscando en {{ category.name }}: "{{ request.args.get('q') }}"
+                    <a href="{{ url_for('product_blueprint.category_products', category_id=category.id) }}" class="text-danger ms-2">
+                        <i class="fas fa-times"></i> Limpiar
+                    </a>
+                </small>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Filtros y ordenamiento -->
+        <div class="filters mb-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="mb-2 mb-md-0">
+                    <span class="fw-bold me-2">Ordenar por:</span>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a href="{{ url_for('product_blueprint.category_products', category_id=category.id, q=request.args.get('q', ''), sort='name', order='asc' if sort != 'name' or order == 'desc' else 'desc') }}" 
+                           class="btn btn-outline-secondary {% if sort == 'name' %}active{% endif %}">
+                            Nombre 
+                            {% if sort == 'name' %}
+                                <i class="fas fa-sort-{{ 'up' if order == 'asc' else 'down' }} ms-1"></i>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('product_blueprint.category_products', category_id=category.id, q=request.args.get('q', ''), sort='price', order='asc' if sort != 'price' or order == 'desc' else 'desc') }}" 
+                           class="btn btn-outline-secondary {% if sort == 'price' %}active{% endif %}">
+                            Precio
+                            {% if sort == 'price' %}
+                                <i class="fas fa-sort-{{ 'up' if order == 'asc' else 'down' }} ms-1"></i>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+                <div class="text-muted small fw-bold">
+                    Mostrando {{ products.items|length }} de {{ products.total }} productos
+                </div>
+            </div>
+        </div>
+
+    {% if products.items %}
+    <div class="productos-grid">
+        {% for product in products.items %}
+        <div class="producto-card">
+            <div class="producto-info p-3 text-center">
+                {% if product.product_picture %}
+                    <img src="{{ product.product_picture }}" alt="{{ product.name }}" class="product-image" style="max-height: 120px; width: auto; border-radius: 8px;">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/default-product.jpg') }}" alt="Imagen por defecto" class="product-image" style="max-height: 120px; width: auto; border-radius: 8px; opacity: 0.7;">
+                {% endif %}
+                <h3 class="producto-nombre mb-2 mt-2">{{ product.name }}</h3>
+                <p class="text-muted mb-3">
+                    {{ product.description }}
+                </p>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="producto-precio fw-bold">S/ {{ "%.2f"|format(product.current_price) }}</div>
+                    <span class="badge bg-{{ 'success' if product.in_stock > 0 else 'danger' }}">
+                        {{ 'En stock' if product.in_stock > 0 else 'Agotado' }}
+                    </span>
+                </div>
+                {% if product.previous_price and product.previous_price > product.current_price %}
+                    <div class="text-muted text-decoration-line-through small mb-2">
+                        Precio anterior: S/ {{ "%.2f"|format(product.previous_price) }}
+                    </div>
+                {% endif %}
+                <div class="producto-detalles">
+                    {% if product.code %}
+                        <div class="text-muted small">
+                            <i class="fas fa-barcode me-1"></i> {{ product.code }}
+                        </div>
+                    {% endif %}
+                    {% if product.category %}
+                        <div class="text-muted small">
+                            <i class="fas fa-tag me-1"></i> {{ product.category.name }}
+                        </div>
+                    {% endif %}
+                    {% if product.stock_quantity > 0 %}
+                        <div class="text-muted small">
+                            <i class="fas fa-box me-1"></i> {{ product.stock_quantity }} disponibles
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="producto-acciones">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin or current_user.is_super_admin %}
+                        <!-- Opciones para administradores -->
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('views.edit_item', item_id=product.id) }}" class="btn btn-warning btn-sm flex-grow-1">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="{{ url_for('views.confirm_delete', item_id=product.id) }}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <!-- Usuarios normales -->
+                        {% if product.stock_quantity > 0 %}
+                            <a href="{{ url_for('views.add_to_cart', item_id=product.id) }}" class="btn btn-primary w-100">
+                                <i class="fas fa-shopping-cart"></i> Agregar al Carrito
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary w-100" disabled>
+                                <i class="fas fa-times"></i> Agotado
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <!-- Usuarios no autenticados -->
+                    {% if product.stock_quantity > 0 %}
+                        <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-sign-in-alt"></i> Inicia sesión para comprar
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary w-100" disabled>
+                            <i class="fas fa-times"></i> Agotado
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4>No se encontraron productos</h4>
+            <p class="text-muted">Intenta con otros términos de búsqueda o filtros</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginación -->
+    {% if products.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if products.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('product_blueprint.category_products', category_id=category.id, page=products.prev_num, 
+                                q=request.args.get('q', ''), sort=sort, order=order) }}" 
+                       aria-label="Anterior">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&laquo;</span>
+                </li>
+            {% endif %}
+
+            {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                {% if page_num %}
+                    {% if page_num != products.page %}
+                        <li class="page-item">
+                            <a class="page-link" 
+                               href="{{ url_for('product_blueprint.category_products', category_id=category.id, page=page_num, 
+                                        q=request.args.get('q', ''), sort=sort, order=order) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if products.has_next %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('product_blueprint.category_products', category_id=category.id, page=products.next_num, 
+                                q=request.args.get('q', ''), sort=sort, order=order) }}" 
+                       aria-label="Siguiente">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    <p class="product-count">Mostrando {{ products.items|length }} de {{ products.total }} productos</p>
+    
+    {% else %}
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <div>
+            <h5 class="alert-heading fw-bold mb-1">No se encontraron productos</h5>
+            {% if request.args.get('q') %}
+                <p class="mb-0">No hay productos que coincidan con "{{ request.args.get('q') }}" en {{ category.name }}.</p>
+                <a href="{{ url_for('product_blueprint.category_products', category_id=category.id) }}" class="alert-link">
+                    Ver todos los productos de {{ category.name }}
+                </a>
+            {% else %}
+                <p class="mb-0">Actualmente no hay productos disponibles en esta categoría.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

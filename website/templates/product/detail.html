@@ -1,0 +1,262 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.product_name }} - Detalles{% endblock %}
+
+{% block styles %}
+<style>
+    .product-detail {
+        background: var(--nav-bg);
+        border: 1px solid var(--orange-border);
+        border-radius: 10px;
+        padding: 30px;
+        margin-top: 20px;
+        box-shadow: 0 5px 15px var(--orange-glow);
+    }
+    
+    .product-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background: #f8f9fa;
+        padding: 20px;
+    }
+    
+    .product-title {
+        color: var(--text-color);
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+    
+    .product-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--orange-border);
+        margin: 20px 0;
+    }
+    
+    .product-description {
+        color: var(--text-color);
+        line-height: 1.6;
+        margin-bottom: 30px;
+    }
+    
+    .product-meta {
+        margin: 20px 0;
+        padding: 15px;
+        background: rgba(255, 153, 0, 0.1);
+        border-radius: 8px;
+    }
+    
+    .meta-item {
+        margin: 10px 0;
+        color: var(--text-color);
+    }
+    
+    .meta-label {
+        font-weight: 600;
+        color: var(--orange-border);
+    }
+    
+    .btn-custom {
+        padding: 12px 25px;
+        font-weight: 600;
+        border-radius: 8px;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px var(--orange-glow);
+    }
+    
+    .admin-actions {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--orange-border);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.product_picture %}
+            <img src="{{ product.product_picture }}" alt="{{ product.product_name }}" class="product-image">
+            {% else %}
+            <div class="product-image d-flex align-items-center justify-content-center">
+                <i class="fas fa-box-open fa-5x text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-6">
+            <div class="product-detail">
+                <h1 class="product-title">{{ product.product_name }}</h1>
+                
+                <div class="product-price">
+                    ${{ "%.2f"|format(product.current_price) }}
+                    {% if product.previous_price and product.previous_price > product.current_price %}
+                    <small class="text-muted text-decoration-line-through ms-2">${{ "%.2f"|format(product.previous_price) }}</small>
+                    {% endif %}
+                </div>
+                
+                <div class="product-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Categoría:</span>
+                        <a href="{{ url_for('views.category_products', category_id=product.category_id) }}" class="text-primary">
+                            {{ product.category.name }}
+                        </a>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Disponibilidad:</span>
+                        {% if product.in_stock %}
+                        <span class="text-success">En stock ({{ product.stock_quantity }} unidades)</span>
+                        {% else %}
+                        <span class="text-danger">Agotado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="product-description">
+                    <h5 class="mb-3">Descripción del producto</h5>
+                    {{ product.description|safe if product.description else 'No hay descripción disponible para este producto.' }}
+                </div>
+                
+                {% if current_user.is_authenticated and not current_user.is_admin %}
+                <!-- User actions -->
+                <div class="d-flex flex-wrap">
+                    {% if product.in_stock %}
+                    <button class="btn btn-warning btn-custom add-to-cart" data-product-id="{{ product.id }}">
+                        <i class="fas fa-cart-plus"></i> Añadir al carrito
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary btn-custom" disabled>
+                        <i class="fas fa-times-circle"></i> Producto no disponible
+                    </button>
+                    {% endif %}
+                    
+                    <button class="btn btn-outline-secondary btn-custom">
+                        <i class="far fa-heart"></i> Añadir a favoritos
+                    </button>
+                </div>
+                {% elif not current_user.is_authenticated %}
+                <!-- Guest actions -->
+                <div class="alert alert-info">
+                    <p class="mb-3">¡Inicia sesión para comprar o añadir productos al carrito!</p>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                    </a>
+                    <a href="{{ url_for('auth.sign_up') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-plus"></i> Crear cuenta
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_super_admin) %}
+                <!-- Admin actions -->
+                <div class="admin-actions">
+                    <h5 class="mb-3">Acciones de administrador</h5>
+                    <div class="d-flex flex-wrap">
+                        <a href="{{ url_for('views.edit_product', product_id=product.id) }}" class="btn btn-primary btn-custom">
+                            <i class="fas fa-edit"></i> Editar producto
+                        </a>
+                        <form action="{{ url_for('views.delete_product', product_id=product.id) }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-danger btn-custom" onclick="return confirm('¿Estás seguro de eliminar este producto?')">
+                                <i class="fas fa-trash"></i> Eliminar producto
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<!-- Productos relacionados -->
+{% if related_products %}
+<div class="container py-4">
+    <h3 class="mb-4">Productos relacionados</h3>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for related in related_products %}
+        <div class="col">
+            <div class="card h-100">
+                <a href="{{ url_for('product_blueprint.detail', id=related.id) }}">
+                    <img src="{{ related.product_picture }}" class="card-img-top" alt="{{ related.product_name }}" 
+                         style="height: 180px; object-fit: contain; padding: 15px;">
+                </a>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{{ url_for('product_blueprint.detail', id=related.id) }}" class="text-decoration-none text-dark">
+                            {{ related.product_name|truncate(40) }}
+                        </a>
+                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="h5 mb-0">${{ "%.2f"|format(related.current_price) }}</span>
+                            {% if related.previous_price and related.previous_price > related.current_price %}
+                                <small class="text-muted text-decoration-line-through ms-2">
+                                    ${{ "%.2f"|format(related.previous_price) }}
+                                </small>
+                            {% endif %}
+                        </div>
+                        <span class="badge bg-{{ 'success' if related.in_stock > 0 else 'danger' }}">
+                            {{ 'En stock' if related.in_stock > 0 else 'Agotado' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('product_blueprint.detail', id=related.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            Ver detalles
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% block scripts %}
+<script>
+    // Add to cart functionality
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            fetch(`/add-to-cart/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update cart count in the navbar
+                    const cartCount = document.getElementById('cart-count');
+                    if (cartCount) {
+                        cartCount.textContent = data.cart_count;
+                    }
+                    // Show success message
+                    alert('Producto añadido al carrito');
+                } else {
+                    alert('Error al añadir al carrito: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al añadir al carrito');
+            });
+        });
+    });
+</script>
+{% endblock %}

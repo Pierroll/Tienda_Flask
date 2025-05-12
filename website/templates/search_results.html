@@ -1,0 +1,711 @@
+{% extends "base.html" %}
+
+{% block title %}Resultados de búsqueda: {{ query }}{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    /* Search Suggestions Styles */
+    .search-suggestions {
+        position: absolute;
+        z-index: 1050;
+        width: 100%;
+        max-width: 600px;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+    }
+    
+    .suggestion-item {
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        color: #212529;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .suggestion-item:hover, .suggestion-item:focus {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+        text-decoration: none;
+    }
+    
+    .suggestion-item i {
+        width: 20px;
+        text-align: center;
+        margin-right: 10px;
+        color: #6c757d;
+    }
+    
+    .suggestion-header {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.875rem;
+        color: #6c757d;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .suggestion-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.5rem 1.25rem;
+    }
+    
+    .suggestion-buttons .btn {
+        border-radius: 50px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+    .search-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+    }
+    .search-loading.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .search-loading .spinner {
+        width: 50px;
+        height: 50px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Filtros</h5>
+                </div>
+                <div class="card-body">
+                    <form id="searchForm" method="get" action="{{ url_for('views.search') }}" class="position-relative">
+                        <div id="searchSuggestions" class="search-suggestions"></div>
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="q" 
+                                   value="{{ query }}" 
+                                   placeholder="Buscar productos..." 
+                                   autocomplete="off"
+                                   aria-label="Buscar productos">
+                            <button class="btn btn-warning" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        
+                        {% for key, value in request.args.items() %}
+                            {% if key != 'page' and key != 'min_price' and key != 'max_price' and key != 'in_stock' and key != 'category' and key != 'q' %}
+                                <input type="hidden" name="{{ key }}" value="{{ value }}">
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <h6 class="mt-3">Precio</h6>
+                        <div class="row g-2">
+                            <div class="col">
+                                <input type="number" class="form-control" name="min_price" 
+                                       placeholder="Mín" value="{{ request.args.get('min_price', '') }}">
+                            </div>
+                            <div class="col">
+                                <input type="number" class="form-control" name="max_price" 
+                                       placeholder="Máx" value="{{ request.args.get('max_price', '') }}">
+                            </div>
+                        </div>
+                        
+                        <h6 class="mt-3">Disponibilidad</h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="in_stock" 
+                                   id="inStock" value="1" 
+                                   {% if request.args.get('in_stock') == '1' %}checked{% endif %}>
+                            <label class="form-check-label" for="inStock">
+                                Solo en stock
+                            </label>
+                        </div>
+                        
+                        <h6 class="mt-3">Categorías</h6>
+                        {% for category in categories %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="category" value="{{ category.id }}"
+                                   id="cat{{ category.id }}"
+                                   {% if category.id|string in request.args.getlist('category') %}checked{% endif %}>
+                            <label class="form-check-label" for="cat{{ category.id }}">
+                                {{ category.name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                        
+                        <button type="submit" class="btn btn-warning w-100 mt-3">
+                            Aplicar filtros
+                        </button>
+                        <a href="{{ url_for('views.search', q=query) }}" class="btn btn-outline-secondary w-100 mt-2">
+                            Limpiar filtros
+                        </a>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Búsqueda relacionada -->
+            {% if related_searches %}
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Búsquedas relacionadas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for term in related_searches %}
+                        <a href="{{ url_for('views.search', q=term) }}" class="btn btn-sm btn-outline-secondary">
+                            {{ term }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">Resultados para: "{{ query }}"</h2>
+                <div class="text-muted">
+                    {{ products.total }} resultado{{ 's' if products.total != 1 else '' }} encontrado{{ 's' if products.total != 1 else '' }}
+                </div>
+            </div>
+            
+            {% if products.total == 0 %}
+            <div class="no-results text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                <h3>No se encontraron productos</h3>
+                <p class="text-muted mb-4">No hay resultados para "{{ query }}". Intenta con otras palabras clave o categorías.</p>
+                {% if did_you_mean %}
+                <p class="mb-3">¿Quisiste decir: 
+                    <a href="{{ url_for('views.search', q=did_you_mean) }}" class="fw-bold text-decoration-none">
+                        {{ did_you_mean }}
+                    </a>?
+                </p>
+                {% endif %}
+                <a href="{{ url_for('views.list_products') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Ver todos los productos
+                </a>
+            </div>
+            {% else %}
+            <!-- Ordenamiento y vista -->
+            <div class="card mb-4">
+                <div class="card-body py-2">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="btn-group" role="group">
+                                <span class="me-2 text-muted">Ordenar por:</span>
+                                {% set args = request.args.copy() %}
+                                {% set _ = args.pop('sort', None) %}
+                                {% set _ = args.pop('order', None) %}
+                                {% set sort_args = request.args.copy().to_dict() %}
+                                {% set _ = sort_args.pop('page', None) %}
+                                {% set _ = sort_args.pop('sort', None) %}
+                                {% set _ = sort_args.pop('order', None) %}
+                                
+                                {% set relevance_args = sort_args.copy() %}
+                                {% set _ = relevance_args.update({'sort': 'relevance', 'order': 'desc'}) %}
+                                <a href="{{ url_for('views.search', **relevance_args) }}" 
+                                   class="btn btn-sm {% if sort == 'relevance' %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+                                    Relevancia
+                                </a>
+                                
+                                {% set name_args = sort_args.copy() %}
+                                {% set name_order = 'asc' if sort == 'name' and order == 'desc' else 'desc' %}
+                                {% set _ = name_args.update({'sort': 'name', 'order': name_order}) %}
+                                <a href="{{ url_for('views.search', **name_args) }}" 
+                                   class="btn btn-sm {% if sort == 'name' %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+                                    Nombre 
+                                    <i class="fas fa-sort-{% if sort == 'name' and order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                </a>
+                                
+                                {% set price_args = sort_args.copy() %}
+                                {% set price_order = 'asc' if sort == 'price' and order == 'desc' else 'asc' %}
+                                {% set _ = price_args.update({'sort': 'price', 'order': price_order}) %}
+                                <a href="{{ url_for('views.search', **price_args) }}" 
+                                   class="btn btn-sm {% if sort == 'price' %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+                                    Precio 
+                                    <i class="fas fa-sort-{% if sort == 'price' and order == 'asc' %}up{% else %}down{% endif %} ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de productos -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="productsGrid" data-masonry='{"percentPosition": true}'>
+                {% for product in products.items %}
+                <div class="col">
+                    <div class="card h-100 product-card">
+                        <div class="card-body text-center">
+                            {% if product.product_picture %}
+                                <img src="{{ product.product_picture }}" alt="{{ product.product_name }}" class="product-image" style="max-height: 120px; width: auto; border-radius: 8px;">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/default-product.jpg') }}" alt="Imagen por defecto" class="product-image" style="max-height: 120px; width: auto; border-radius: 8px; opacity: 0.7;">
+                            {% endif %}
+                            <h5 class="card-title mt-2">{{ product.product_name }}</h5>
+                            <p class="card-text text-muted mb-2">
+                                {{ product.description }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="product-price fw-bold">${{ "%.2f"|format(product.current_price) }}</span>
+                                        <span class="badge bg-{{ 'success' if product.in_stock > 0 else 'danger' }} ms-2">
+                                            {{ 'En stock' if product.in_stock > 0 else 'Agotado' }}
+                                        </span>
+                                    </div>
+                                    {% if product.previous_price and product.previous_price > product.current_price %}
+                                        <div class="text-muted text-decoration-line-through small">
+                                            Precio anterior: ${{ "%.2f"|format(product.previous_price) }}
+                                        </div>
+                                    {% endif %}
+                                    {% if product.code %}
+                                        <div class="text-muted small mt-1">
+                                            Código: {{ product.code }}
+                                        </div>
+                                    {% endif %}
+                                    {% if product.category %}
+                                        <div class="text-muted small">
+                                            Categoría: {{ product.category.name }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('product_blueprint.detail', id=product.id) }}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i> Ver detalles
+                                </a>
+                                
+                                {% if current_user.is_authenticated %}
+                                    {% if current_user.is_admin or current_user.is_super_admin %}
+                                        <!-- Opciones para administradores -->
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ url_for('views.edit_item', item_id=product.id) }}" class="btn btn-warning btn-sm flex-grow-1">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </a>
+                                            <a href="{{ url_for('views.confirm_delete', item_id=product.id) }}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <!-- Usuarios normales pueden comprar si hay stock -->
+                                        {% if product.in_stock > 0 %}
+                                            <a href="{{ url_for('views.add_to_cart', item_id=product.id) }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-cart-plus me-1"></i> Añadir al carrito
+                                            </a>
+                                        {% else %}
+                                            <button class="btn btn-secondary btn-sm w-100" disabled>
+                                                <i class="fas fa-times"></i> Agotado
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                {% else %}
+                                    <!-- Usuarios no autenticados -->
+                                    {% if product.in_stock > 0 %}
+                                        <button class="btn btn-outline-primary btn-sm w-100" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#loginModal">
+                                            <i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                            <i class="fas fa-times-circle me-1"></i> No disponible
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Paginación -->
+            {% if products.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% set pagination_args = request.args.copy().to_dict() %}
+                    {% if 'page' in pagination_args %}
+                        {% set _ = pagination_args.pop('page') %}
+                    {% endif %}
+                    
+                    {% set prev_page_args = pagination_args.copy() %}
+                    {% set _ = prev_page_args.update({'page': products.prev_num}) %}
+                    <li class="page-item {% if not products.has_prev %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('views.search', **prev_page_args) }}" 
+                           {% if not products.has_prev %}tabindex="-1" aria-disabled="true"{% endif %}>
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                        {% if page_num %}
+                            {% set page_args = pagination_args.copy() %}
+                            {% set _ = page_args.update({'page': page_num}) %}
+                            <li class="page-item {% if page_num == products.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('views.search', **page_args) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% set next_page_args = pagination_args.copy() %}
+                    {% set _ = next_page_args.update({'page': products.next_num}) %}
+                    <li class="page-item {% if not products.has_next %}disabled{% endif %}">
+                        <a class="page-link" href="{{ url_for('views.search', **next_page_args) }}" 
+                           {% if not products.has_next %}tabindex="-1" aria-disabled="true"{% endif %}>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- Loading Overlay -->
+<div class="search-loading" id="searchLoading">
+    <div class="text-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mt-3 fw-bold">Buscando productos...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js"></script>
+<script src="https://unpkg.com/imagesloaded@5.0.0/imagesloaded.pkgd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="q"]');
+    const searchForm = document.getElementById('searchForm');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    let debounceTimer;
+
+    // Show recent searches on focus
+    searchInput.addEventListener('focus', function() {
+        showRecentSearches();
+    });
+
+    // Handle search input
+    searchInput.addEventListener('input', function(e) {
+        clearTimeout(debounceTimer);
+        const query = e.target.value.trim();
+        
+        if (query.length < 2) {
+            showRecentSearches();
+            return;
+        }
+        
+        debounceTimer = setTimeout(() => {
+            fetchSuggestions(query);
+        }, 300);
+    });
+
+    // Fetch search suggestions
+    function fetchSuggestions(query) {
+        fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                displaySuggestions(data.suggestions || []);
+            })
+            .catch(error => {
+                console.error('Error fetching suggestions:', error);
+                suggestionsContainer.style.display = 'none';
+            });
+    }
+
+    // Display search suggestions
+    function displaySuggestions(suggestions) {
+        if (!suggestions || suggestions.length === 0) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+
+        let html = `
+            <div class="suggestion-header">
+                <i class="fas fa-lightbulb me-2"></i>Sugerencias de búsqueda
+            </div>
+            <div class="suggestion-buttons">`;
+
+        suggestions.forEach(suggestion => {
+            html += `
+                <a href="{{ url_for('views.search') }}?q=${encodeURIComponent(suggestion)}" 
+                   class="btn btn-outline-primary btn-sm">
+                    ${suggestion}
+                </a>`;
+        });
+
+        html += '</div>';
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = 'block';
+    }
+
+    // Show recent searches
+    function showRecentSearches() {
+        const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+        
+        if (recentSearches.length === 0) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+
+        let html = `
+            <div class="suggestion-header">
+                <i class="fas fa-clock me-2"></i>Búsquedas recientes
+                <button class="btn btn-sm btn-link float-end p-0 text-muted" id="clearRecentSearches">
+                    <small>Limpiar</small>
+                </button>
+            </div>
+            <div class="suggestion-buttons">`;
+
+        recentSearches.slice(0, 5).forEach(search => {
+            html += `
+                <a href="{{ url_for('views.search') }}?q=${encodeURIComponent(search)}" 
+                   class="btn btn-outline-secondary btn-sm">
+                    ${search}
+                </a>`;
+        });
+
+        html += '</div>';
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = 'block';
+
+        // Add event listener for clear button
+        const clearBtn = document.getElementById('clearRecentSearches');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                localStorage.removeItem('recentSearches');
+                suggestionsContainer.style.display = 'none';
+            });
+        }
+    }
+
+    // Save search to recent searches
+    searchForm.addEventListener('submit', function() {
+        const query = searchInput.value.trim();
+        if (query) {
+            let recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+            // Remove if already exists
+            recentSearches = recentSearches.filter(item => item !== query);
+            // Add to beginning
+            recentSearches.unshift(query);
+            // Keep only last 10 searches
+            if (recentSearches.length > 10) {
+                recentSearches = recentSearches.slice(0, 10);
+            }
+            localStorage.setItem('recentSearches', JSON.stringify(recentSearches));
+        }
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchForm.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+});
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Masonry
+        let msnry;
+        const grid = document.querySelector('#productsGrid');
+        if (grid) {
+            imagesLoaded(grid, function() {
+                msnry = new Masonry(grid, {
+                    itemSelector: '.col',
+                    percentPosition: true,
+                    transitionDuration: '0.2s'
+                });
+                
+                // Re-layout after images load
+                const images = grid.getElementsByTagName('img');
+                Array.from(images).forEach(img => {
+                    if (img.complete) {
+                        msnry.layout();
+                    } else {
+                        img.addEventListener('load', function() {
+                            msnry.layout();
+                        });
+                    }
+                });
+            });
+        }
+        
+        // Show loading overlay during page transitions
+        const loadingOverlay = document.getElementById('searchLoading');
+        
+        // Show loading when form is submitted
+        const filterForm = document.getElementById('filterForm');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function() {
+                loadingOverlay.classList.add('active');
+                
+                // Smooth scroll to top
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Add debounce to price inputs to prevent excessive filtering
+            const priceInputs = filterForm.querySelectorAll('input[type="number"]');
+            let priceTimeout;
+            
+            priceInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    clearTimeout(priceTimeout);
+                    priceTimeout = setTimeout(() => {
+                        filterForm.requestSubmit();
+                    }, 500);
+                });
+            });
+        }
+        
+        // Show loading when pagination links are clicked
+        document.querySelectorAll('.page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (this.getAttribute('href') !== '#' && !this.closest('.disabled')) {
+                    loadingOverlay.classList.add('active');
+                    
+                    // Smooth scroll to top
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Show loading when sorting links are clicked
+        document.querySelectorAll('a[href*="sort="]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                loadingOverlay.classList.add('active');
+                
+                // Smooth scroll to top
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // Handle filter changes
+        const filterCheckboxes = document.querySelectorAll('input[type="checkbox"][name="category"], input[type="checkbox"][name="in_stock"]');
+        filterCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                loadingOverlay.classList.add('active');
+                filterForm.requestSubmit();
+            });
+        });
+        
+        // Hide loading when page is fully loaded
+        window.addEventListener('load', function() {
+            // Small delay to ensure all resources are loaded
+            setTimeout(() => {
+                loadingOverlay.classList.remove('active');
+                
+                // Reinitialize Masonry after load
+                if (msnry) {
+                    msnry.layout();
+                }
+            }, 300);
+        });
+        
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function() {
+            loadingOverlay.classList.add('active');
+            // Small delay to show loading indicator before reload
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+        });
+    });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle between grid and list view
+    const gridViewBtn = document.getElementById('gridViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    const productsGrid = document.getElementById('productsGrid');
+    
+    if (gridViewBtn && listViewBtn && productsGrid) {
+        gridViewBtn.addEventListener('click', function() {
+            productsGrid.className = 'row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4';
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+            localStorage.setItem('productView', 'grid');
+        });
+        
+        listViewBtn.addEventListener('click', function() {
+            productsGrid.className = 'row row-cols-1';
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+            localStorage.setItem('productView', 'list');
+        });
+        
+        // Load saved view preference
+        const savedView = localStorage.getItem('productView') || 'grid';
+        if (savedView === 'list') {
+            listViewBtn.click();
+        } else {
+            gridViewBtn.click();
+        }
+    }
+    
+    // Update filter form to maintain all query parameters
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        // Add hidden inputs for sort and order
+        const sortInput = document.createElement('input');
+        sortInput.type = 'hidden';
+        sortInput.name = 'sort';
+        sortInput.value = '{{ sort }}';
+        filterForm.appendChild(sortInput);
+        
+        const orderInput = document.createElement('input');
+        orderInput.type = 'hidden';
+        orderInput.name = 'order';
+        orderInput.value = '{{ order }}';
+        filterForm.appendChild(orderInput);
+    }
+});
+</script>
+{% endblock %}

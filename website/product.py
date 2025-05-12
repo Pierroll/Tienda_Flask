@@ -1,20 +1,50 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
+from sqlalchemy import or_, desc, asc
 from .models import Product, Category
 from . import db
 import os
 from werkzeug.utils import secure_filename
 
-product = Blueprint('product', __name__, 
+product_blueprint = Blueprint('product_blueprint', __name__, 
                     template_folder='templates/product',
                     url_prefix='/product')
 
-@product.route('/')
+@product_blueprint.route('/')
 def product_list():
-    products = Product.query.all()
-    return render_template('product/list.html', products=products)
+    # Paginación
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    # Búsqueda
+    search_query = request.args.get('q', '')
+    if search_query:
+        products = Product.query.filter(
+            or_(
+                Product.product_name.ilike(f'%{search_query}%'),
+                Product.description.ilike(f'%{search_query}%')
+            )
+        )
+    else:
+        products = Product.query
+    
+    # Ordenamiento
+    sort = request.args.get('sort', 'id')
+    order = request.args.get('order', 'desc')
+    
+    if sort == 'name':
+        products = products.order_by(asc(Product.product_name) if order == 'asc' else desc(Product.product_name))
+    elif sort == 'price':
+        products = products.order_by(asc(Product.current_price) if order == 'asc' else desc(Product.current_price))
+    else:
+        products = products.order_by(Product.id.desc())
+    
+    # Aplicar paginación
+    products = products.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('product/list.html', products=products, search_query=search_query)
 
-@product.route('/add', methods=['GET', 'POST'])
+@product_blueprint.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_product():
     categories = Category.query.all()
@@ -33,8 +63,8 @@ def add_product():
         if product_picture:
             filename = secure_filename(product_picture.filename)
             # Save the file
-            product_picture.save(os.path.join('website/static/images', filename))
-            picture_path = f'/static/images/{filename}'
+            product_picture.save(os.path.join('..', 'media', filename))
+            picture_path = f'/media/{filename}'
         else:
             picture_path = '/static/images/default.jpg'
         
@@ -57,7 +87,7 @@ def add_product():
     
     return render_template('product/add.html', categories=categories)
 
-@product.route('/edit/<int:id>', methods=['GET', 'POST'])
+@product_blueprint.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_product(id):
     product = Product.query.get_or_404(id)
@@ -78,8 +108,8 @@ def edit_product(id):
         if product_picture and product_picture.filename:
             filename = secure_filename(product_picture.filename)
             # Save the file
-            product_picture.save(os.path.join('website/static/images', filename))
-            product.product_picture = f'/static/images/{filename}'
+            product_picture.save(os.path.join('..', 'media', filename))
+            product.product_picture = f'/media/{filename}'
         
         db.session.commit()
         flash('Product updated successfully!', 'success')
@@ -87,7 +117,7 @@ def edit_product(id):
     
     return render_template('product/edit.html', product=product, categories=categories)
 
-@product.route('/delete/<int:id>', methods=['GET', 'POST'])
+@product_blueprint.route('/delete/<int:id>', methods=['GET', 'POST'])
 def delete_product(id):
     if request.method == 'GET':
         # Mostrar página de confirmación
@@ -106,7 +136,49 @@ def delete_product(id):
             flash('Error al eliminar el producto', 'error')
         return redirect(url_for('admin.shop_items'))
 
-@product.route('/detail/<int:id>')
-def product_detail(id):
+@product_blueprint.route('/detail/<int:id>')
+def detail(id):
     product = Product.query.get_or_404(id)
     return render_template('product/detail.html', product=product)
+
+@product_blueprint.route('/category/<int:category_id>')
+def category_products(category_id):
+    category = Category.query.get_or_404(category_id)
+    
+    # Paginación
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    # Búsqueda
+    search_query = request.args.get('q', '')
+    products = Product.query.filter_by(category_id=category_id)
+    
+    if search_query:
+        products = products.filter(
+            or_(
+                Product.product_name.ilike(f'%{search_query}%'),
+                Product.description.ilike(f'%{search_query}%')
+            )
+        )
+    
+    # Ordenamiento
+    sort = request.args.get('sort', 'id')
+    order = request.args.get('order', 'desc')
+    
+    if sort == 'name':
+        products = products.order_by(asc(Product.product_name) if order == 'asc' else desc(Product.product_name))
+    elif sort == 'price':
+        products = products.order_by(asc(Product.current_price) if order == 'asc' else desc(Product.current_price))
+    else:
+        products = products.order_by(Product.id.desc())
+    
+    # Aplicar paginación
+    products = products.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template('categoria/category_products.html', 
+                         category=category, 
+                         products=products,
+                         search_query=search_query)
+
+# Export the blueprint with the correct name
+product_blueprint = product_blueprint

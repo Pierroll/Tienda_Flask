@@ -146,9 +146,11 @@
     .product-image {
         width: 100%;
         height: 200px;
-        object-fit: cover;
+        object-fit: contain;
         border-radius: 8px;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
+        background-color: #fff;
+        padding: 10px;
         border: 1px solid var(--orange-border);
     }
 
@@ -219,25 +221,57 @@
         <!-- Categorías -->
         <div class="col-12 col-md-3">
             <div class="category-list">
-                {% if current_user.is_admin %}
-                <a href="{{ url_for('views.categories') }}" class="list-group-item list-group-item-action">
-                    <i class="fa fa-cog"></i>
-                    <span class="link-name">Gestionar Categorías</span>
-                </a>
-                {% endif %}
-                
-                {% if categories %}
-                    {% for category in categories %}
-                    <a href="{{ url_for('views.category_products', category_id=category.id) }}" class="list-group-item list-group-item-action">
-                        <i class="{{ category.icon }}"></i>
-                        <span class="link-name">{{ category.name }}</span>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_admin or current_user.is_super_admin %}
+                    <a href="{{ url_for('views.categories') }}" class="list-group-item list-group-item-action">
+                        <i class="fa fa-cog"></i>
+                        <span class="link-name">Gestionar Categorías</span>
                     </a>
-                    {% endfor %}
+                    {% endif %}
+                    
+                    <!-- Mostrar categorías a todos los usuarios autenticados -->
+                    {% if categories %}
+                        {% for category in categories %}
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('views.category_products', category_id=category.id) }}" class="list-group-item list-group-item-action flex-grow-1">
+                                <i class="{{ category.icon }}"></i>
+                                <span class="link-name">{{ category.name }}</span>
+                            </a>
+                            {% if current_user.is_admin or current_user.is_super_admin %}
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('views.edit_category', category_id=category.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item">
+                            <i class="fa fa-info-circle"></i>
+                            <span class="link-name">No hay categorías disponibles</span>
+                            {% if current_user.is_admin or current_user.is_super_admin %}
+                            <a href="{{ url_for('views.add_category') }}" class="btn btn-primary btn-sm mt-2">
+                                <i class="fa fa-plus"></i> Agregar Categoría
+                            </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% else %}
-                    <div class="list-group-item">
-                        <i class="fa fa-info-circle"></i>
-                        <span class="link-name">No hay categorías disponibles</span>
-                    </div>
+                    <!-- Mostrar solo categorías a usuarios no autenticados -->
+                    {% if categories %}
+                        {% for category in categories %}
+                        <a href="{{ url_for('views.category_products', category_id=category.id) }}" class="list-group-item list-group-item-action">
+                            <i class="{{ category.icon }}"></i>
+                            <span class="link-name">{{ category.name }}</span>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item">
+                            <i class="fa fa-info-circle"></i>
+                            <span class="link-name">No hay categorías disponibles</span>
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -310,20 +344,83 @@
     <div class="product-grid">
         {% for item in items %}
         <div class="product-card">
-            
-            <img src="{{ item.product_picture }}" loading="lazy" alt="{{ item.product_name }}" class="product-image">
-
+            {% if item.product_picture %}
+                <img src="{{ item.product_picture }}" alt="{{ item.product_name }}" class="product-image">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/default-product.jpg') }}" alt="Imagen por defecto" class="product-image">
+            {% endif %}
             <h3 class="product-name">{{ item.product_name }}</h3>
             <div class="price-container">
-                <p class="product-price">S/. {{ item.current_price }}</p>
-                <p class="previous-price">S/. {{ item.previous_price }}</p>
+                <p class="product-price">S/ {{ '%.2f'|format(item.current_price) }}</p>
+                <p class="previous-price">S/ {{ '%.2f'|format(item.previous_price) if item.previous_price else '' }}</p>
             </div>
-            <p class="stock-info">{{ item.in_stock }} Artículos Disponibles</p>
-            <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-add-cart">
-                Agregar al Carrito
-            </a>
+            <p class="stock-info">{{ item.stock_quantity }} Artículos Disponibles</p>
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_admin or current_user.is_super_admin %}
+                    <!-- Solo mostrar opción de editar para administradores -->
+                    <a href="{{ url_for('views.edit_item', item_id=item.id) }}" class="btn btn-warning btn-sm w-100">
+                        <i class="fas fa-edit"></i> Editar Producto
+                    </a>
+                {% else %}
+                    <!-- Usuarios normales pueden comprar si hay stock -->
+                    {% if item.stock_quantity > 0 %}
+                        <a href="{{ url_for('views.add_to_cart', item_id=item.id) }}" class="btn btn-primary w-100">
+                            <i class="fas fa-shopping-cart"></i> Agregar al Carrito
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary w-100" disabled>
+                            <i class="fas fa-times"></i> Agotado
+                        </button>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <!-- Usuarios no autenticados -->
+                <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-sign-in-alt"></i> Inicia sesión para comprar
+                </a>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
 </div>
+
+{% if show_profile_modal %}
+<!-- Modal de edición de perfil obligatorio -->
+<div class="modal show" tabindex="-1" style="display:block; background:rgba(0,0,0,0.5);">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Completa tu información de perfil</h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          Por favor, completa tu información de perfil para continuar. Todos los campos son obligatorios.
+        </div>
+        <form method="POST" action="{{ url_for('views.update_profile') }}">
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control", required=True) }}
+          </div>
+          <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control", required=True) }}
+          </div>
+          <div class="mb-3">
+            {{ form.phone_number.label(class="form-label") }}
+            {{ form.phone_number(class="form-control", required=True) }}
+          </div>
+          <div class="mb-3">
+            {{ form.address.label(class="form-label") }}
+            {{ form.address(class="form-control", required=True) }}
+          </div>
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Guardar y Continuar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
