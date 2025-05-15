@@ -1,2 +1,43 @@
+# Ignorar entornos virtuales
+venv/
+env/
+
+# Ignorar configuraciones específicas del IDE
+.idea/
+.vscode/
+
+# Ignorar cachés de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar archivos de logs
+*.log
+log/
+logs/
+
+# Ignorar archivos de pruebas y reportes
+.pytest_cache/
+reports/
+screenshots/
+
+# Ignorar dependencias instaladas
+*.egg-info/
+*.bak
+
+# Ignorar configuraciones locales
+instance/
+*.env
+
+# Ignorar binarios y ejecutables
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignorar archivos de base de datos
+*.sqlite3
+*.db
+
 # Ignorar la carpeta python-selenium-browserstack
 python-selenium-browserstack/

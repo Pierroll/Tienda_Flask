@@ -52,10 +52,14 @@ def test_login_exitoso(browser):
         password = browser.find_element(By.ID, "password")
         submit = browser.find_element(By.XPATH, "//button[@type='submit']")
         
-        # Reemplaza estos valores con credenciales válidas de tu sistema
+        # Usar credenciales de prueba desde variables de entorno o valores predeterminados
+        import os
+        test_email = os.getenv('TEST_EMAIL', 'test@example.com')
+        test_password = os.getenv('TEST_PASSWORD', 'password123')
+        
         credenciales = {
-            "email": "usuario@ejemplo.com",  # Cambiar por un email registrado
-            "password": "contraseña_valida"   # Cambiar por la contraseña correcta
+            "email": test_email,
+            "password": test_password
         }
         
         email.clear()
@@ -77,8 +81,8 @@ def test_login_exitoso(browser):
                 lambda d: d.current_url != f"{BASE_URL}/auth/login"
             )
             
-            # Verificar que estamos en la página de inicio o dashboard
-            assert "dashboard" in browser.current_url.lower() or "inicio" in browser.current_url.lower() or "home" in browser.current_url.lower()
+            # Verificar que estamos en la página de inicio (root URL)
+            assert browser.current_url.rstrip('/') == f"{BASE_URL}" or "home" in browser.current_url.lower()
             print("✓ Redirección exitosa después del login")
             take_screenshot(browser, "03_despues_login")
             
