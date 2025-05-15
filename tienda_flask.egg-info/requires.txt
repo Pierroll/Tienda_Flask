@@ -1,0 +1,10 @@
+flask
+flask-sqlalchemy
+flask-login
+flask-wtf
+flask-mail
+email-validator
+pillow
+selenium
+webdriver-manager
+pytest

@@ -9,10 +9,14 @@ import secrets
 import string
 
 
+# Inicializar extensiones
 db = SQLAlchemy()
 DB_NAME = "database.sqlite3"
 csrf = CSRFProtect()
 mail = Mail()
+
+# Configuración de SQLAlchemy
+SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Clave de seguridad para el administrador (debería estar en una variable de entorno)
 ADMIN_SECURITY_KEY = os.environ.get('ADMIN_SECURITY_KEY', 'your-super-secret-key-here')
