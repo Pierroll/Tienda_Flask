@@ -162,7 +162,7 @@
                             <span class="badge bg-secondary">No</span>
                         {% endif %}
                     </td>
-                    <td>{{ item.date_added.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>
                         <div class="d-flex gap-1 justify-content-center">
                             {% if current_user.is_authenticated %}
@@ -258,7 +258,7 @@
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">
-                        <small class="text-muted">Agregado el {{ item.date_added.strftime('%d/%m/%Y') }}</small>
+                        <small class="text-muted">Agregado el {{ item.created_at.strftime('%d/%m/%Y') }}</small>
                     </div>
                 </div>
             </div>

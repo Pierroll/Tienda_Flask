@@ -1,5 +1,6 @@
 from . import db
-from .models import Customer, Product, Category, Cart, Order
+from .models import Customer, Cart, Order
+from .modules.product.models import Product, Category
 
 def init_db():
     # Drop all tables

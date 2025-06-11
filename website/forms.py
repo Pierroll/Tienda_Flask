@@ -87,7 +87,7 @@ class ShopItemsForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(ShopItemsForm, self).__init__(*args, **kwargs)
         # Cargar las categorías disponibles
-        from .models import Category
+        from .modules.product.models import Category
         self.category_id.choices = [(c.id, c.name) for c in Category.query.order_by('name').all()]
 
 

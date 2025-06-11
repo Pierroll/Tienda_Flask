@@ -81,31 +81,6 @@ class Customer(db.Model, UserMixin):
         return '<Customer %r>' % self.id
 
 
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    product_name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    current_price = db.Column(db.Float, nullable=False)
-    previous_price = db.Column(db.Float)
-    in_stock = db.Column(db.Boolean, default=True)  # Indica si el producto está disponible para la venta
-    stock_quantity = db.Column(db.Integer, default=0, nullable=False)  # Cantidad exacta en stock
-    flash_sale = db.Column(db.Boolean, default=False)
-    product_picture = db.Column(db.String(200))
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    order_items = db.relationship('OrderItem', backref='product', lazy=True, cascade='all, delete-orphan')
-    carts = db.relationship('Cart', backref=db.backref('product', lazy=True), cascade='all, delete-orphan')
-    date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    # Relación con el usuario que creó el producto
-    creator = db.relationship('Customer', backref=db.backref('products_created', lazy=True))
-
-    def __str__(self):
-        return f'<Product {self.product_name}>'
-
-
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
@@ -163,19 +138,6 @@ class Cart(db.Model):
     
     def __str__(self):
         return '<Cart %r>' % self.id
-
-
-class Category(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    # La relación con productos se maneja desde el modelo Product
-
-    def __repr__(self):
-        return f'<Category {self.name}>'
-
 
 
 

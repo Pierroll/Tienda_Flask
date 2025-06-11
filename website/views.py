@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, request, jsonify, url_for
-from .models import Product, Cart, Order, Category, Customer, OrderItem
+from .models import Cart, Order, Customer, OrderItem
+from .modules.product.models import Product, Category
 from flask_login import login_required, current_user
 from . import db
 # from intasend import APIService
@@ -469,7 +470,7 @@ def search():
             Product.product_name != query,
             Product.in_stock > 0
         ).order_by(
-            Product.times_ordered.desc()
+            Product.created_at.desc()
         ).limit(3).all()
         
         for product in popular_in_category:
@@ -742,8 +743,8 @@ def categories():
     if not (current_user.is_admin or current_user.is_super_admin):
         flash('You do not have permission to access this page.', 'error')
         return redirect(url_for('views.home'))
-    categories = Category.query.all()
-    return render_template('categoria/categoria.html', categories=categories)
+    # Redirigir a la ruta del blueprint de categorías
+    return redirect(url_for('category.list_categories'))
 
 class CategoryForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
@@ -770,7 +771,7 @@ def add_category():
         except Exception as e:
             db.session.rollback()
             flash(f'Error creating category: {str(e)}', 'error')
-    return render_template('categoria/agregar_categoria.html', form=form)
+    return render_template('category/agregar_categoria.html', form=form)
 
 @views.route('/category/<int:category_id>/edit')
 @login_required
@@ -781,7 +782,7 @@ def edit_category(category_id):
     
     category = Category.query.get_or_404(category_id)
     form = CategoryForm(obj=category)
-    return render_template('categoria/editar_categoria.html', category=category, form=form)
+    return render_template('category/editar_categoria.html', category=category, form=form)
 
 @views.route('/category/<int:category_id>/edit', methods=['POST'])
 @login_required
@@ -800,7 +801,7 @@ def edit_category_post(category_id):
         flash('Category updated successfully', 'success')
         return redirect(url_for('views.categories'))
     
-    return render_template('categoria/editar_categoria.html', category=category, form=form)
+    return render_template('category/editar_categoria.html', category=category, form=form)
 
 @views.route('/category/<int:category_id>/delete', methods=['POST'])
 @login_required
@@ -835,7 +836,7 @@ def category_products(category_id):
     if not products.items and page > 1:
         return redirect(url_for('views.category_products', category_id=category_id))
     
-    return render_template('categoria/category_products.html', 
+    return render_template('category/category_products.html', 
                          category=category, 
                          products=products)
 

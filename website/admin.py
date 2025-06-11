@@ -4,7 +4,8 @@ from flask import Blueprint, render_template, flash, send_from_directory, redire
 from flask_login import login_required, current_user, login_required
 from .forms import ShopItemsForm, OrderForm, CreateAdminForm
 from werkzeug.utils import secure_filename
-from .models import Product, Order, Customer
+from .models import Order, Customer
+from .modules.product.models import Product
 from . import db
 from werkzeug.security import generate_password_hash
 
@@ -89,8 +90,8 @@ def admin_management():
         Customer.role.in_(['super_admin', 'admin'])
     ).order_by(
         db.case(
-            [(Customer.role == 'super_admin', 1),
-             (Customer.role == 'admin', 2)],
+            (Customer.role == 'super_admin', 1),
+            (Customer.role == 'admin', 2),
             else_=3
         ),
         Customer.username

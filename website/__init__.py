@@ -8,6 +8,9 @@ import os
 import secrets
 import string
 
+# Importar modelos de cliente al nivel del módulo
+# Los modelos se importarán cuando se inicialice la aplicación para evitar importaciones circulares
+
 
 # Inicializar extensiones
 db = SQLAlchemy()
@@ -113,27 +116,65 @@ def create_app():
         return render_template('errors/500.html'), 500
 
     login_manager = LoginManager()
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = 'auth.login'  # Esta ruta ahora será /auth/login
     login_manager.init_app(app)
 
-    from .models import Customer, Cart, Product, Order, Category
+    from .models import Customer, Cart, Order, OrderItem
+    from .modules.product.models import Product
+    from .modules.category.models import Category
 
     @login_manager.user_loader
     def load_user(id):
         return Customer.query.get(int(id))
 
-    # Importar blueprints después de inicializar las extensiones
+    # Importar rutas después de crear la aplicación para evitar importaciones circulares
     from .views import views
-    from .auth import auth
-    from .admin import admin as admin_blueprint
-    from .product import product_blueprint
-
-    # Registrar blueprints
+    from .admin import admin
+    
+    # Importar y registrar módulos
+    from .modules.auth import create_module as create_auth_module
+    from .modules.product import create_module as create_product_module
+    from .modules.category import create_module as create_category_module
+    from .modules.cliente import cliente_bp
+    from .modules.admin import init_module as init_admin_module
+    
+    # Registrar blueprints con prefijos específicos para evitar conflictos
     app.register_blueprint(views, url_prefix='/')
-    app.register_blueprint(auth, url_prefix='/auth')
-    app.register_blueprint(admin_blueprint, url_prefix='/admin')
-    app.register_blueprint(product_blueprint, url_prefix='/product')
-
+    
+    # Registrar módulo de autenticación
+    auth_bp = create_auth_module(app)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    
+    # Registrar módulo de administración
+    admin_bp = init_admin_module(app)
+    
+    # Si necesitas mantener la ruta de administración antigua, usa un nombre diferente
+    # from .admin import admin as old_admin
+    # app.register_blueprint(old_admin, name='old_admin', url_prefix='/admin_old')
+    
+    # Registrar módulo de productos
+    product_bp = create_product_module()
+    app.register_blueprint(product_bp, url_prefix='/product')
+    
+    # Registrar módulo de categorías
+    category_bp = create_category_module()
+    app.register_blueprint(category_bp, url_prefix='/category')
+    
+    # Registrar módulo de cliente
+    from .modules.cliente import init_app as init_cliente
+    cliente_bp = init_cliente(app)
+    app.register_blueprint(cliente_bp, url_prefix='/cliente')
+    
+    # Importar modelos después de inicializar la aplicación
+    from .modules.cliente.models import DireccionEnvio, ListaDeseos, ProductoListaDeseos
+    
+    # Hacer los modelos disponibles en el paquete
+    globals().update({
+        'DireccionEnvio': DireccionEnvio,
+        'ListaDeseos': ListaDeseos,
+        'ProductoListaDeseos': ProductoListaDeseos
+    })
+    
     create_database(app)
     
     # Asegurar que el token CSRF esté disponible en todas las plantillas
