@@ -21,3 +21,5 @@ colorama==0.4.6
 Jinja2==3.1.6
 MarkupSafe==3.0.2gunicorn
 gunicorn
+python-dotenv
+
