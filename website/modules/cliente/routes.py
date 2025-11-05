@@ -32,7 +32,7 @@ def carrito():
     cart = Cart.query.filter_by(customer_id=current_user.id).all()
     amount = 0
     for item in cart:
-        amount += item.product.current_price + item.quantity
+        amount = item.product.current_price + item.quantity
     return render_template('cliente/cart.html', cart=cart, amount=amount, total=amount+200)
 
 @cliente_bp.route('/agregar_al_carrito/<int:producto_id>', methods=['POST'])
@@ -133,7 +133,7 @@ def plus_cart():
                 'status': 2  # Código para indicar stock insuficiente
             })
             
-        cart_item.quantity += 1
+        cart_item.quantity = cart_item.quantity
         db.session.commit()
         
         # Obtener el carrito actualizado
