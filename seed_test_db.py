@@ -16,7 +16,6 @@ def seed_database():
         users_to_create = [
             {'email': 'cinthia@tienda.com', 'password': 'Cinthia123456', 'username': 'Cinthia', 'role': 'customer'},
             {'email': 'luacas@tienda.com', 'password': 'Lucas123456', 'username': 'Lucas', 'role': 'admin'},
-            {'email': 'admin@tienda.com', 'password': 'Admin123', 'username': 'Admin', 'role': 'admin'},
             {'email': 'test@example.com', 'password': 'password123', 'username': 'Test', 'role': 'customer'}
         ]
 
