@@ -1,0 +1,43 @@
+name: Pipeline de CI/CD para Tienda-Flask
+
+# Disparadores: El pipeline se ejecuta en 'push' a estas ramas
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+      - 'hotfix/*'
+
+jobs:
+  # --- TRABAJO 1: PRUEBAS (CI) ---
+  # Este trabajo se ejecuta para TODAS las ramas disparadoras
+  build-and-test:
+    name: Compilación y Pruebas Unitarias
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Clonar el repositorio
+        uses: actions/checkout@v4
+
+      - name: 2. Configurar Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - name: 3. Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 4. Preparar la base de datos para pruebas (seeding)
+        env:
+          FLASK_APP: main.py
+        run: python seed_test_db.py
+
+      - name: 5. Iniciar la aplicación en segundo plano con Gunicorn
+        run: |
+          gunicorn --bind 0.0.0.0:5000 run:app &
+          sleep 5 # Dar tiempo a la app para que inicie
+
+      - name: 6. Ejecutar Pruebas Unitarias (Pytest)
+        run: pytest

@@ -25,12 +25,14 @@ def take_screenshot(driver, name):
 def browser():
     """Configura el navegador para las pruebas"""
     options = webdriver.ChromeOptions()
-    options.add_argument("--start-maximized")
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-extensions")
     options.add_argument("--disable-notifications")
     options.add_argument("--disable-infobars")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
     
     driver = webdriver.Chrome(options=options)
     driver.set_page_load_timeout(30)  # 30 segundos para cargar la página
