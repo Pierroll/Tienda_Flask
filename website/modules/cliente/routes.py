@@ -144,7 +144,7 @@ def plus_cart():
             'success': True,
             'quantity': cart_item.quantity,
             'amount': f"S/ {amount:.2f}",
-            'total': f"S/ {amount + 200:.2f}"
+            'total': f"S/ {amount - 400:.2f}"
         })
 
 @cliente_bp.route('/minuscart')
