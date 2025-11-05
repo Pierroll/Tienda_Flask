@@ -34,11 +34,9 @@ jobs:
           FLASK_APP: main.py
         run: python seed_test_db.py
 
-      - name: 5. Iniciar la aplicación en segundo plano
-        env:
-          FLASK_APP: main.py
+      - name: 5. Iniciar la aplicación en segundo plano con Gunicorn
         run: |
-          flask run &
+          gunicorn --bind 0.0.0.0:5000 main:app &
           sleep 5 # Dar tiempo a la app para que inicie
 
       - name: 6. Ejecutar Pruebas Unitarias (Pytest)
