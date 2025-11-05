@@ -29,5 +29,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 4. Ejecutar Pruebas Unitarias (Pytest)
+      - name: 4. Iniciar la aplicación en segundo plano
+        env:
+          FLASK_APP: main.py
+        run: |
+          flask run &
+          sleep 5 # Dar tiempo a la app para que inicie
+
+      - name: 5. Ejecutar Pruebas Unitarias (Pytest)
         run: pytest
