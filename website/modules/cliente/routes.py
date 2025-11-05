@@ -101,9 +101,8 @@ def actualizar_carrito(item_id):
         
         # Recalcular total
         cart = Cart.query.filter_by(customer_id=current_user.id).all()
-        amount = sum(item.product.current_price * item.quantity for item in cart)
-        
-        return jsonify({
+            amount = sum(item.product.current_price + item.quantity for item in cart)
+            return jsonify({
             'success': True,
             'subtotal': f"S/ {item.product.current_price * item.quantity:.2f}",
             'total': f"S/ {amount + 200:.2f}",
