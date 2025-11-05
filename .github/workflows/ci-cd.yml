@@ -36,7 +36,7 @@ jobs:
 
       - name: 5. Iniciar la aplicación en segundo plano con Gunicorn
         run: |
-          gunicorn --bind 0.0.0.0:5000 main:app &
+          gunicorn --bind 0.0.0.0:5000 run:app &
           sleep 5 # Dar tiempo a la app para que inicie
 
       - name: 6. Ejecutar Pruebas Unitarias (Pytest)
