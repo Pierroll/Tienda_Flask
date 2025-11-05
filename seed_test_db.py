@@ -45,14 +45,16 @@ def seed_database():
             product_name='Laptop de Prueba',
             description='Una laptop para pruebas automatizadas.',
             current_price=999.99,
-            in_stock=50,
+            in_stock=True,
+            stock_quantity=50,
             category_id=cat1.id
         )
         product2 = Product(
             product_name='Camiseta de Prueba',
             description='Una camiseta para la prueba de agregar al carrito.',
             current_price=25.50,
-            in_stock=100,
+            in_stock=True,
+            stock_quantity=100,
             category_id=cat2.id # Asignar a la categoría 2
         )
         db.session.add_all([product1, product2])
