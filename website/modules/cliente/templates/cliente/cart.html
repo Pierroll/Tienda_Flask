@@ -226,3 +226,16 @@
 
 
 {% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Forzar un cálculo erróneo visible para el informe
+        const totalElement = document.getElementById('totalamount');
+        if (totalElement) {
+            // Reemplazar el total con un número obviamente incorrecto
+            totalElement.textContent = '9999.99'; 
+        }
+    });
+</script>
+{% endblock %}
