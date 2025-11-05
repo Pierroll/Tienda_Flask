@@ -174,138 +174,306 @@ def test_agregar_producto_al_carrito(browser):
         time.sleep(3)
         take_screenshot(browser, "04_pagina_categoria_2")
         
-        # Verificar que estamos en la página de categoría
-        if "category/2" not in browser.current_url:
-            print(f"⚠ No se pudo cargar la categoría 2. URL actual: {browser.current_url}")
-            print("Contenido de la página:")
-            print(browser.page_source[:1000])  # Mostrar los primeros 1000 caracteres
-            raise Exception("No se pudo cargar la página de categoría 2")
+                    # Verificar que estamos en la página de categoría
         
-        # 5. Agregar un producto al carrito
-        print("5. Intentando agregar un producto al carrito...")
-        try:
-            # Tomar captura de la página antes de buscar el botón
-            take_screenshot(browser, "05_antes_de_buscar_boton")
-            
-            # Intentar diferentes formas de encontrar el botón de agregar al carrito
-            selectores_posibles = [
-                "//button[contains(@class, 'btn-primary') and contains(., 'Agregar al carrito')]",
-                "//button[contains(., 'Agregar al carrito')]",
-                "//a[contains(@class, 'btn-primary') and contains(., 'Agregar al carrito')]",
-                "//a[contains(., 'Agregar al carrito')]",
-                "//button[contains(@class, 'btn') and contains(., 'Agregar')]",
-                "//a[contains(@class, 'btn') and contains(., 'Agregar')]"
-            ]
-            
-            boton_encontrado = False
-            for selector in selectores_posibles:
-                try:
-                    boton = WebDriverWait(browser, 5).until(
-                        EC.element_to_be_clickable((By.XPATH, selector))
-                    )
-                    print(f"✓ Botón encontrado con el selector: {selector}")
-                    boton.click()
-                    print("✓ Producto agregado al carrito")
-                    take_screenshot(browser, "06_producto_agregado")
-                    boton_encontrado = True
-                    break
-                except Exception as e:
-                    print(f"  - No se pudo encontrar el botón con el selector: {selector}")
-            
-            if not boton_encontrado:
-                raise Exception("No se pudo encontrar ningún botón de 'Agregar al carrito'")
-                
-            
-            # Verificar que se mostró el mensaje de éxito
-            try:
-                WebDriverWait(browser, 5).until(
-                    EC.visibility_of_element_located((By.CLASS_NAME, "alert-success"))
-                )
-                print("✓ Mensaje de éxito mostrado")
-                take_screenshot(browser, "07_mensaje_exito")
-            except:
-                print("⚠ No se mostró el mensaje de éxito")
-            
-        except Exception as e:
-            print(f"✗ No se pudo agregar el producto al carrito: {str(e)}")
-            take_screenshot(browser, "error_agregar_carrito")
-            raise
+                    if "category/2" not in browser.current_url:
         
-        # 6. Verificar el carrito
-        print("6. Verificando el carrito...")
-        try:
-            # Tomar captura antes de buscar el carrito
-            take_screenshot(browser, "07_antes_de_ver_carrito")
-            
-            # Intentar diferentes formas de encontrar el enlace al carrito
-            selectores_carrito = [
-                "//a[contains(@href, '/cart')]",
-                "//a[contains(., 'Carrito')]",
-                "//a[contains(., 'carrito')]",
-                "//a[contains(., 'Ver carrito')]",
-                "//a[contains(@class, 'cart')]"
-            ]
-            
-            carrito_encontrado = False
-            for selector in selectores_carrito:
-                try:
-                    carrito = WebDriverWait(browser, 5).until(
-                        EC.element_to_be_clickable((By.XPATH, selector))
-                    )
-                    print(f"✓ Enlace al carrito encontrado con el selector: {selector}")
-                    carrito.click()
-                    time.sleep(3)
-                    take_screenshot(browser, "08_pagina_carrito")
-                    carrito_encontrado = True
-                    break
-                except Exception as e:
-                    print(f"  - No se pudo encontrar el carrito con el selector: {selector}")
-            
-            if not carrito_encontrado:
-                raise Exception("No se pudo encontrar el enlace al carrito")
-            
-            # Verificar que hay productos en el carrito
-            try:
-                # Intentar diferentes selectores para los productos en el carrito
-                selectores_productos = [
-                    "//div[contains(@class, 'cart-item')]",
-                    "//div[contains(@class, 'item')]",
-                    "//tr[contains(@class, 'product')]",
-                    "//div[contains(@class, 'product')]"
-                ]
-                
-                productos_encontrados = False
-                for selector in selectores_productos:
-                    try:
-                        productos = browser.find_elements(By.XPATH, selector)
-                        if productos:
-                            print(f"✓ Se encontraron {len(productos)} productos en el carrito con el selector: {selector}")
-                            productos_encontrados = True
-                            break
-                    except:
-                        continue
-                
-                if not productos_encontrados:
-                    print("⚠ No se encontraron productos en el carrito")
-                    print("Contenido de la página del carrito:")
-                    print(browser.page_source[:1500])  # Mostrar más contenido para diagnóstico
+                        print(f"⚠ No se pudo cargar la categoría 2. URL actual: {browser.current_url}")
+        
+                        print("Contenido de la página:")
+        
+                        print(browser.page_source[:1000])  # Mostrar los primeros 1000 caracteres
+        
+                        raise Exception("No se pudo cargar la página de categoría 2")
+        
                     
-            except Exception as e:
-                print(f"⚠ No se pudo verificar el contenido del carrito: {str(e)}")
-                
-        except Exception as e:
-            print(f"✗ No se pudo acceder al carrito: {str(e)}")
-            take_screenshot(browser, "error_ver_carrito")
-            print("Contenido de la página actual:")
-            print(browser.page_source[:1500])  # Mostrar más contenido para diagnóstico
         
-        print("\n✓ Prueba de agregar producto al carrito completada con éxito")
+                    # Esperar a que al menos un producto esté visible antes de buscar el botón
         
-    except Exception as e:
-        take_screenshot(browser, "error_prueba")
-        print(f"\n✗ Error durante la prueba: {str(e)}")
-        print(f"Tipo de error: {type(e).__name__}")
-        print(f"URL actual: {browser.current_url}")
-        print("Contenido de la página:")
-        print(browser.page_source[:1000])  # Mostrar los primeros 1000 caracteres
-        raise
+                    print("Esperando a que los productos carguen en la página...")
+        
+                    try:
+        
+                        WebDriverWait(browser, 15).until(
+        
+                            EC.presence_of_element_located((By.XPATH, "//div[contains(@class, 'product-card')] | //div[contains(@class, 'product-item')] | //div[contains(@class, 'col-md-4')]//div[contains(@class, 'card')]"))
+        
+                        )
+        
+                        print("✓ Al menos un producto visible en la página.")
+        
+                    except Exception as e:
+        
+                        print(f"✗ No se encontraron productos en la página de categoría 2: {str(e)}")
+        
+                        take_screenshot(browser, "04_error_no_productos")
+        
+                        raise Exception("No se encontraron productos en la página de categoría 2")
+        
+        
+        
+                    # 5. Agregar un producto al carrito
+        
+                    print("5. Intentando agregar un producto al carrito...")
+        
+                    try:
+        
+                        # Tomar captura de la página antes de buscar el botón
+        
+                        take_screenshot(browser, "05_antes_de_buscar_boton")
+        
+        
+        
+                        # Intentar diferentes formas de encontrar el botón de agregar al carrito
+        
+                        # Priorizar selectores más específicos dentro de un contexto de producto
+        
+                        selectores_posibles = [
+        
+                            "//div[contains(@class, 'product-card')]//button[contains(., 'Agregar al carrito')]",
+        
+                            "//div[contains(@class, 'product-item')]//button[contains(., 'Agregar al carrito')]",
+        
+                            "//div[contains(@class, 'card')]//button[contains(., 'Agregar al carrito')]",
+        
+                            "//button[contains(@class, 'btn-primary') and contains(., 'Agregar al carrito')]",
+        
+                            "//button[contains(., 'Agregar al carrito')]",
+        
+                            "//a[contains(@class, 'btn-primary') and contains(., 'Agregar al carrito')]",
+        
+                            "//a[contains(., 'Agregar al carrito')]",
+        
+                            "//button[contains(@class, 'btn') and contains(., 'Agregar')]",
+        
+                            "//a[contains(@class, 'btn') and contains(., 'Agregar')]"
+        
+                        ]
+        
+        
+        
+                        boton_encontrado = False
+        
+                        for selector in selectores_posibles:
+        
+                            try:
+        
+                                boton = WebDriverWait(browser, 10).until(
+        
+                                    EC.element_to_be_clickable((By.XPATH, selector))
+        
+                                )
+        
+                                print(f"✓ Botón encontrado con el selector: {selector}")
+        
+                                boton.click()
+        
+                                print("✓ Producto agregado al carrito")
+        
+                                take_screenshot(browser, "06_producto_agregado")
+        
+                                boton_encontrado = True
+        
+                                break
+        
+                            except Exception as e:
+        
+                                print(f"  - No se pudo encontrar el botón con el selector: {selector}")
+        
+        
+        
+                        if not boton_encontrado:
+        
+                            raise Exception("No se pudo encontrar ningún botón de 'Agregar al carrito'")
+        
+        
+        
+        
+        
+                        # Verificar que se mostró el mensaje de éxito
+        
+                        try:
+        
+                            WebDriverWait(browser, 5).until(
+        
+                                EC.visibility_of_element_located((By.CLASS_NAME, "alert-success"))
+        
+                            )
+        
+                            print("✓ Mensaje de éxito mostrado")
+        
+                            take_screenshot(browser, "07_mensaje_exito")
+        
+                        except:
+        
+                            print("⚠ No se mostró el mensaje de éxito")
+        
+        
+        
+                    except Exception as e:
+        
+                        print(f"✗ No se pudo agregar el producto al carrito: {str(e)}")
+        
+                        take_screenshot(browser, "error_agregar_carrito")
+        
+                        raise
+        
+        
+        
+                    # 6. Verificar el carrito
+        
+                    print("6. Verificando el carrito...")
+        
+                    try:
+        
+                        # Tomar captura antes de buscar el carrito
+        
+                        take_screenshot(browser, "07_antes_de_ver_carrito")
+        
+        
+        
+                        # Intentar diferentes formas de encontrar el enlace al carrito
+        
+                        selectores_carrito = [
+        
+                            "//a[contains(@href, '/cart')]",
+        
+                            "//a[contains(., 'Carrito')]",
+        
+                            "//a[contains(., 'carrito')]",
+        
+                            "//a[contains(., 'Ver carrito')]",
+        
+                            "//a[contains(@class, 'cart')]"
+        
+                        ]
+        
+        
+        
+                        carrito_encontrado = False
+        
+                        for selector in selectores_carrito:
+        
+                            try:
+        
+                                carrito = WebDriverWait(browser, 5).until(
+        
+                                    EC.element_to_be_clickable((By.XPATH, selector))
+        
+                                )
+        
+                                print(f"✓ Enlace al carrito encontrado con el selector: {selector}")
+        
+                                carrito.click()
+        
+                                time.sleep(3)
+        
+                                take_screenshot(browser, "08_pagina_carrito")
+        
+                                carrito_encontrado = True
+        
+                                break
+        
+                            except Exception as e:
+        
+                                print(f"  - No se pudo encontrar el carrito con el selector: {selector}")
+        
+        
+        
+                        if not carrito_encontrado:
+        
+                            raise Exception("No se pudo encontrar el enlace al carrito")
+        
+        
+        
+                        # Verificar que hay productos en el carrito
+        
+                        try:
+        
+                            # Intentar diferentes selectores para los productos en el carrito
+        
+                            selectores_productos = [
+        
+                                "//div[contains(@class, 'cart-item')]",
+        
+                                "//div[contains(@class, 'item')]",
+        
+                                "//tr[contains(@class, 'product')]",
+        
+                                "//div[contains(@class, 'product')]"
+        
+                            ]
+        
+        
+        
+                            productos_encontrados = False
+        
+                            for selector in selectores_productos:
+        
+                                try:
+        
+                                    productos = browser.find_elements(By.XPATH, selector)
+        
+                                    if productos:
+        
+                                        print(f"✓ Se encontraron {len(productos)} productos en el carrito con el selector: {selector}")
+        
+                                        productos_encontrados = True
+        
+                                        break
+        
+                                except:
+        
+                                    continue
+        
+        
+        
+                            if not productos_encontrados:
+        
+                                print("⚠ No se encontraron productos en el carrito")
+        
+                                print("Contenido de la página del carrito:")
+        
+                                print(browser.page_source[:1500])  # Mostrar más contenido para diagnóstico
+        
+        
+        
+                        except Exception as e:
+        
+                            print(f"⚠ No se pudo verificar el contenido del carrito: {str(e)}")
+        
+        
+        
+                    except Exception as e:
+        
+                        print(f"✗ No se pudo acceder al carrito: {str(e)}")
+        
+                        take_screenshot(browser, "error_ver_carrito")
+        
+                        print("Contenido de la página actual:")
+        
+                        print(browser.page_source[:1500])  # Mostrar más contenido para diagnóstico
+        
+        
+        
+                    print("\n✓ Prueba de agregar producto al carrito completada con éxito")
+        
+        
+        
+                except Exception as e:
+        
+                    take_screenshot(browser, "error_prueba")
+        
+                    print(f"\n✗ Error durante la prueba: {str(e)}")
+        
+                    print(f"Tipo de error: {type(e).__name__}")
+        
+                    print(f"URL actual: {browser.current_url}")
+        
+                    print("Contenido de la página:")
+        
+                    print(browser.page_source[:1000])  # Mostrar los primeros 1000 caracteres
+        
+                    raise
+        
+        
