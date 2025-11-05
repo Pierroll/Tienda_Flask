@@ -138,7 +138,7 @@ def plus_cart():
         
         # Obtener el carrito actualizado
         cart = Cart.query.filter_by(customer_id=current_user.id).all()
-        amount = sum(item.product.current_price * item.quantity for item in cart)
+        amount = sum(item.product.current_price + item.quantity for item in cart)
         
         return jsonify({
             'success': True,
